@@ -1,0 +1,326 @@
+/* Base CSS Variables - Replaces Tailwind's CSS custom properties */
+
+/* Light theme colors */
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --primary: hsl(221.2, 83.2%, 53.3%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --ring: hsl(221.2, 83.2%, 53.3%);
+  --chart-1: hsl(12, 76%, 61%);
+  --chart-2: hsl(173, 58%, 39%);
+  --chart-3: hsl(197, 37%, 24%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
+  --radius: 0.5rem;
+
+  /* Additional color mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Transparent variants */
+  --color-primary-transparent: rgba(37, 99, 235, 0.2);
+  --color-destructive-transparent: rgba(239, 68, 68, 0.2);
+
+  /* Common color palette */
+  --color-blue-50: hsl(214, 100%, 97%);
+  --color-blue-100: hsl(214, 95%, 93%);
+  --color-blue-600: hsl(221, 83%, 53%);
+  --color-indigo-100: hsl(226, 100%, 94%);
+  --color-gray-800: hsl(215, 28%, 17%);
+  --color-gray-900: hsl(222, 84%, 5%);
+
+  /* Warning colors */
+  --color-warning-bg: hsl(48, 100%, 96%);
+  --color-warning-border: hsl(43, 96%, 56%);
+
+  /* Status colors */
+  --color-success: hsl(142, 71%, 45%);
+  --color-success-bg: hsl(142, 76%, 96%);
+  --color-error: hsl(0, 84%, 60%);
+  --color-error-bg: hsl(0, 86%, 97%);
+  --color-warning: hsl(38, 92%, 50%);
+  --color-info-bg: hsl(214, 100%, 97%);
+}
+
+/* Dark theme colors */
+.dark {
+  --background: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --card: hsl(217.2, 32.6%, 17.5%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: hsl(217.2, 32.6%, 17.5%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(217.2, 91.2%, 59.8%);
+  --primary-foreground: hsl(222.2, 84%, 4.9%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217.2, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --accent: hsl(217.2, 32.6%, 17.5%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --ring: hsl(217.2, 91.2%, 59.8%);
+  --chart-1: hsl(220, 70%, 50%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
+
+  /* Additional color mappings for dark mode */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Transparent variants for dark mode */
+  --color-primary-transparent: rgba(96, 165, 250, 0.2);
+  --color-destructive-transparent: rgba(248, 113, 113, 0.2);
+
+  /* Common color palette for dark mode */
+  --color-blue-50: hsl(222, 84%, 5%);
+  --color-blue-100: hsl(221, 39%, 11%);
+  --color-blue-600: hsl(217, 91%, 60%);
+  --color-indigo-100: hsl(217, 33%, 18%);
+  --color-gray-800: hsl(217, 33%, 18%);
+  --color-gray-900: hsl(222, 84%, 5%);
+
+  /* Warning colors for dark mode */
+  --color-warning-bg: hsl(32, 81%, 12%);
+  --color-warning-border: hsl(33, 100%, 52%);
+
+  /* Status colors for dark mode */
+  --color-success: hsl(142, 71%, 45%);
+  --color-success-bg-dark: hsl(151, 55%, 18%);
+  --color-error: hsl(0, 84%, 60%);
+  --color-error-bg-dark: hsl(0, 63%, 31%);
+  --color-warning: hsl(38, 92%, 50%);
+  --color-info-bg-dark: hsl(217, 91%, 60%);
+}
+
+/* Global reset and base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--border);
+}
+
+/* Force dark mode styles globally */
+.dark * {
+  /* Override any hardcoded light backgrounds */
+  color-scheme: dark;
+}
+
+.dark .container {
+  background: linear-gradient(
+    to bottom right,
+    var(--color-gray-900),
+    var(--color-gray-800)
+  ) !important;
+}
+
+.dark .header {
+  background: var(--color-background) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+.dark .headerIcon {
+  background: var(--color-blue-600) !important;
+}
+
+.dark .headerTitle {
+  color: var(--color-foreground) !important;
+}
+
+.dark .headerSubtitle {
+  color: var(--color-muted-foreground) !important;
+}
+
+/* Additional comprehensive dark mode overrides */
+.dark *[style*="background: rgb(255"] {
+  background: var(--color-background) !important;
+}
+
+.dark *[style*="background: rgb(248"] {
+  background: var(--color-background) !important;
+}
+
+.dark *[style*="color: rgb(17"] {
+  color: var(--color-foreground) !important;
+}
+
+.dark *[style*="color: rgb(75"] {
+  color: var(--color-muted-foreground) !important;
+}
+
+.dark button,
+.dark .button {
+  background: var(--color-card) !important;
+  color: var(--color-foreground) !important;
+  border-color: var(--color-border) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background: var(--color-input) !important;
+  color: var(--color-foreground) !important;
+  border-color: var(--color-border) !important;
+}
+
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+}
+
+body {
+  margin: 0;
+  line-height: inherit;
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+/* Accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Form elements */
+button {
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  margin: 0;
+}
+
+/* Disabled state */
+[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Lists */
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  padding: 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+/* Images */
+img,
+svg {
+  display: block;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke,
+    opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

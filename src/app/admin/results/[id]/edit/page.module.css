@@ -1,0 +1,280 @@
+﻿/* Admin Results Edit Page Styles */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, var(--color-blue-50), var(--color-indigo-100));
+}
+
+:global(.dark) .container {
+  background: linear-gradient(to bottom right, var(--color-gray-900), var(--color-gray-800));
+}
+
+.header {
+  background: var(--color-background);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.headerContainer {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .headerContainer {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .headerContainer {
+    padding: 1rem 2rem;
+  }
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headerIcon {
+  background: var(--color-blue-600);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.headerTitle {
+  color: var(--color-foreground);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.75rem;
+}
+
+.headerSubtitle {
+  color: var(--color-muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .main {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding: 2rem 2rem;
+  }
+}
+
+.formContainer {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.select {
+  display: flex;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-foreground);
+  transition: border-color 0.2s;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-ring);
+  box-shadow: 0 0 0 2px var(--color-ring-offset);
+}
+
+.required {
+  color: var(--color-destructive);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-destructive);
+  font-size: 0.875rem;
+}
+
+.errorIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* Icons */
+.iconLg {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+.iconMd {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.iconSm {
+  height: 1rem;
+  width: 1rem;
+}
+
+.iconWhite {
+  color: white;
+}
+
+.iconWithMargin {
+  margin-right: 0.5rem;
+}
+
+/* Results-specific styles */
+.filtersSection {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.filtersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.searchContainer {
+  position: relative;
+}
+
+.searchInput {
+  padding-left: 2.5rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: var(--muted-foreground);
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox {
+  height: 1rem;
+  width: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+}
+
+.gradeDisplay {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  background: var(--muted);
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  margin-top: 0.5rem;
+}
+
+/* Loading states */
+.loadingSpinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .headerContent {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+
+  .filtersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+  }
+}

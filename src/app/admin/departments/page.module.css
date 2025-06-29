@@ -1,0 +1,254 @@
+/* Admin Departments Page Styles */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
+}
+
+[data-theme="dark"] .container {
+  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* Loading state */
+.loadingContainer {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .loadingContainer {
+  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
+}
+
+.loadingText {
+  font-size: 1.125rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.backIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.headerIcon {
+  height: 2rem;
+  width: 2rem;
+  color: var(--primary);
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* Add button section */
+.addButtonSection {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.addButton {
+  white-space: nowrap;
+}
+
+.addIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Card title */
+.cardTitle {
+  display: flex;
+  align-items: center;
+}
+
+.cardTitleIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+/* Empty state */
+.emptyState {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.emptyStateIcon {
+  height: 3rem;
+  width: 3rem;
+  margin: 0 auto;
+  color: var(--muted-foreground);
+  margin-bottom: 1rem;
+}
+
+.emptyStateText {
+  color: var(--muted-foreground);
+}
+
+.emptyStateButton {
+  margin-top: 1rem;
+}
+
+.emptyStateButtonIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Table */
+.tableContainer {
+  overflow-x: auto;
+}
+
+.departmentsTable {
+  width: 100%;
+}
+
+.tableHeader {
+  border-bottom: 1px solid var(--border);
+}
+
+.tableHeaderCell {
+  text-align: left;
+  padding: 1rem;
+}
+
+.tableHeaderCellCenter {
+  text-align: center;
+  padding: 1rem;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--border);
+}
+
+.tableRow:hover {
+  background: var(--muted) / 0.5;
+}
+
+.tableCell {
+  padding: 1rem;
+}
+
+.tableCellCenter {
+  padding: 1rem;
+  text-align: center;
+}
+
+.departmentInfo {
+  display: flex;
+  align-items: center;
+}
+
+.departmentInfoIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.departmentName {
+  font-weight: 600;
+}
+
+.departmentCode {
+  display: inline-block;
+  background: rgb(219 234 254);
+  color: rgb(30 64 175);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .departmentCode {
+  background: rgb(30 58 138);
+  color: rgb(147 197 253);
+}
+
+.courseCountContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.courseCount {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: rgb(37 99 235);
+}
+
+[data-theme="dark"] .courseCount {
+  color: rgb(96 165 250);
+}
+
+.studentCountContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.studentCount {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: rgb(22 163 74);
+}
+
+[data-theme="dark"] .studentCount {
+  color: rgb(74 222 128);
+}
+
+.createdDate {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.actionsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.actionIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.deleteButton {
+  color: rgb(220 38 38);
+}
+
+.deleteButton:hover {
+  color: rgb(185 28 28);
+}

@@ -1,0 +1,488 @@
+/* Student Transcript Page Styles */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
+  padding: 2rem 1rem;
+}
+
+[data-theme="dark"] .container {
+  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="dark"] .loading {
+  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
+}
+
+.loadingText {
+  font-size: 1.125rem;
+  color: var(--foreground);
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headerIcon {
+  height: 2rem;
+  width: 2rem;
+  color: var(--primary);
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.downloadIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Student Info Card */
+.studentInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .studentInfoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .studentInfoGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoLabel {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.25rem;
+}
+
+.infoValue {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+/* CGPA Summary */
+.performanceGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .performanceGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.performanceItem {
+  text-align: center;
+}
+
+.performanceLabel {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+}
+
+.performanceValue {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.performanceSubtext {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.5rem;
+}
+
+.gradeDisplay {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
+/* Semester Performance */
+.semesterPerformance {
+  margin-top: 1.5rem;
+}
+
+.semesterTitle {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.semesterGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .semesterGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .semesterGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.semesterCard {
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.05);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+[data-theme="dark"] .semesterCard {
+  background-color: rgb(255 255 255 / 0.05);
+}
+
+.semesterLabel {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.semesterSgpa {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  color: var(--foreground);
+}
+
+.semesterGrade {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
+/* Results Section */
+.resultsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.resultCard {
+  margin-bottom: 1.5rem;
+}
+
+.resultCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.resultCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resultIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.sgpaDisplay {
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.sgpaValue {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Results Table */
+.resultsTable {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  border-bottom: 1px solid var(--border);
+}
+
+.tableHeaderCell {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.tableHeaderCellCenter {
+  text-align: center;
+  padding: 1rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.03);
+}
+
+[data-theme="dark"] .tableRow:hover {
+  background-color: rgb(255 255 255 / 0.03);
+}
+
+.tableCell {
+  padding: 1rem;
+  vertical-align: top;
+}
+
+.tableCellCenter {
+  padding: 1rem;
+  text-align: center;
+  vertical-align: top;
+}
+
+.courseCode {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", monospace;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.courseName {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.credits {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.gradePoint {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.gradeBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Grade Colors */
+.gradeAPlus {
+  color: rgb(5 150 105);
+  background-color: rgb(209 250 229);
+}
+
+[data-theme="dark"] .gradeAPlus {
+  color: rgb(52 211 153);
+  background-color: rgb(6 78 59);
+}
+
+.gradeA {
+  color: rgb(22 163 74);
+  background-color: rgb(220 252 231);
+}
+
+[data-theme="dark"] .gradeA {
+  color: rgb(34 197 94);
+  background-color: rgb(20 83 45);
+}
+
+.gradeAMinus {
+  color: rgb(37 99 235);
+  background-color: rgb(219 234 254);
+}
+
+[data-theme="dark"] .gradeAMinus {
+  color: rgb(96 165 250);
+  background-color: rgb(30 58 138);
+}
+
+.gradeBPlus {
+  color: rgb(8 145 178);
+  background-color: rgb(207 250 254);
+}
+
+[data-theme="dark"] .gradeBPlus {
+  color: rgb(34 211 238);
+  background-color: rgb(21 94 117);
+}
+
+.gradeB {
+  color: rgb(79 70 229);
+  background-color: rgb(224 231 255);
+}
+
+[data-theme="dark"] .gradeB {
+  color: rgb(129 140 248);
+  background-color: rgb(55 48 163);
+}
+
+.gradeBMinus {
+  color: rgb(202 138 4);
+  background-color: rgb(254 249 195);
+}
+
+[data-theme="dark"] .gradeBMinus {
+  color: rgb(250 204 21);
+  background-color: rgb(133 77 14);
+}
+
+.gradeCPlus {
+  color: rgb(234 88 12);
+  background-color: rgb(255 237 213);
+}
+
+[data-theme="dark"] .gradeCPlus {
+  color: rgb(251 146 60);
+  background-color: rgb(154 52 18);
+}
+
+.gradeC {
+  color: rgb(217 119 6);
+  background-color: rgb(255 243 199);
+}
+
+[data-theme="dark"] .gradeC {
+  color: rgb(245 158 11);
+  background-color: rgb(146 64 14);
+}
+
+.gradeD {
+  color: rgb(219 39 119);
+  background-color: rgb(252 231 243);
+}
+
+[data-theme="dark"] .gradeD {
+  color: rgb(244 114 182);
+  background-color: rgb(157 23 77);
+}
+
+.gradeF {
+  color: rgb(220 38 38);
+  background-color: rgb(254 242 242);
+}
+
+[data-theme="dark"] .gradeF {
+  color: rgb(248 113 113);
+  background-color: rgb(153 27 27);
+}
+
+.gradeDefault {
+  color: rgb(107 114 128);
+  background-color: rgb(243 244 246);
+}
+
+[data-theme="dark"] .gradeDefault {
+  color: rgb(156 163 175);
+  background-color: rgb(55 65 81);
+}
+
+/* No Results */
+.noResults {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.noResultsIcon {
+  height: 3rem;
+  width: 3rem;
+  margin: 0 auto;
+  color: var(--muted-foreground);
+  margin-bottom: 1rem;
+}
+
+.noResultsTitle {
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+}
+
+.noResultsSubtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* Icon sizes */
+.icon5 {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+/* Card spacing */
+.cardSpacing {
+  margin-bottom: 1.5rem;
+}
+
+/* Flex with items center */
+.flexCenter {
+  display: flex;
+  align-items: center;
+}
