@@ -511,7 +511,7 @@ export async function seedDatabase() {
 }
 
 // Auto-seed if not in production
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV === "production") {
   setTimeout(() => {
     seedDatabase();
   }, 1000);

@@ -41,16 +41,3 @@ export async function POST(request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-// Explicitly handle other methods
-export async function GET() {
-  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-}
-
-export async function PUT() {
-  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-}
-
-export async function DELETE() {
-  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
-}

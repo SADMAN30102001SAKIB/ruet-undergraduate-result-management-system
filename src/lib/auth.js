@@ -15,18 +15,6 @@ export async function verifyPassword(password, hashedPassword) {
 // Admin authentication
 export async function authenticateAdmin(username, password) {
   try {
-    // For demo purposes on Vercel, use hardcoded admin credentials
-    if (process.env.VERCEL === "1") {
-      if (username === "admin" && password === "admin123") {
-        return {
-          id: 1,
-          username: "admin",
-          role: "admin",
-        };
-      }
-      return null;
-    }
-
     const admin = db.prepare("SELECT * FROM admin WHERE username = ?").get(username);
 
     if (!admin) {

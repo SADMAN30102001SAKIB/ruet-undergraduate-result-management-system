@@ -151,8 +151,8 @@ const initializeDatabase = () => {
       createTables(global.__db);
       addBacklogSupport(global.__db);
 
-      // Import and run seeding (only in development and not on Vercel)
-      if (process.env.NODE_ENV !== "production" && !isVercel) {
+      // Import and run seeding (only in production)
+      if (process.env.NODE_ENV === "production") {
         import("./seed")
           .then(({ seedDatabase }) => {
             seedDatabase().catch(console.error);
@@ -167,16 +167,7 @@ const initializeDatabase = () => {
     return global.__db;
   } catch (error) {
     console.error("Database initialization error:", error);
-    // Create a mock database object for error cases
-    return {
-      prepare: () => ({
-        get: () => null,
-        all: () => [],
-        run: () => ({ changes: 0, lastInsertRowid: 0 }),
-      }),
-      exec: () => {},
-      close: () => {},
-    };
+    return null;
   }
 };
 
