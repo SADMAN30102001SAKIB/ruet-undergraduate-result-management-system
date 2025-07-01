@@ -21,7 +21,7 @@ A comprehensive web application for managing student records, course enrollment,
 
 ## Technology Stack
 
-- **Frontend**: Next.js 15 with TypeScript and App Router
+- **Frontend**: Next.js 15 with JavaScript and App Router
 - **Database**: SQLite with better-sqlite3
 - **Styling**: CSS Modules with dark/light mode support
 - **Authentication**: Session-based auth with secure cookies
@@ -128,7 +128,6 @@ src/
 
 - Responsive design with CSS Modules
 - Dark/light mode theme switching
-- Interactive dashboards with statistics
 - Form validation and error handling
 
 ## Development
