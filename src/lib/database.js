@@ -3,6 +3,9 @@ import { join } from "path";
 
 const dbPath = join(process.cwd(), "database.sqlite");
 
+// Check if we're running on Vercel
+const isVercel = process.env.VERCEL === "1";
+
 // Use global to persist across module reloads in development
 // Create tables
 const createTables = (db) => {
@@ -133,31 +136,48 @@ const initializeDatabase = () => {
     return global.__db;
   }
 
-  global.__db = new Database(dbPath);
+  try {
+    // For Vercel deployment, use /tmp directory for SQLite
+    const finalDbPath = isVercel ? "/tmp/database.sqlite" : dbPath;
+    global.__db = new Database(finalDbPath);
 
-  // Enable foreign keys
-  global.__db.pragma("foreign_keys = ON");
+    // Enable foreign keys
+    // Enable foreign keys
+    global.__db.pragma("foreign_keys = ON");
 
-  // Only initialize once
-  if (!global.__dbInitialized) {
-    // Create tables and run migrations
-    createTables(global.__db);
-    addBacklogSupport(global.__db);
+    // Only initialize once
+    if (!global.__dbInitialized) {
+      // Create tables and run migrations
+      createTables(global.__db);
+      addBacklogSupport(global.__db);
 
-    // Import and run seeding (only in development)
-    if (process.env.NODE_ENV !== "production") {
-      import("./seed")
-        .then(({ seedDatabase }) => {
-          seedDatabase().catch(console.error);
-        })
-        .catch(console.error);
+      // Import and run seeding (only in development and not on Vercel)
+      if (process.env.NODE_ENV !== "production" && !isVercel) {
+        import("./seed")
+          .then(({ seedDatabase }) => {
+            seedDatabase().catch(console.error);
+          })
+          .catch(console.error);
+      }
+
+      global.__dbInitialized = true;
+      console.log("Database initialized successfully");
     }
 
-    global.__dbInitialized = true;
-    console.log("Database initialized successfully");
+    return global.__db;
+  } catch (error) {
+    console.error("Database initialization error:", error);
+    // Create a mock database object for error cases
+    return {
+      prepare: () => ({
+        get: () => null,
+        all: () => [],
+        run: () => ({ changes: 0, lastInsertRowid: 0 }),
+      }),
+      exec: () => {},
+      close: () => {},
+    };
   }
-
-  return global.__db;
 };
 
 // Export the database instance

@@ -144,7 +144,7 @@ export default function StudentRegister() {
         {/* Current Semester Notice */}
         {profile && (
           <Card className={`${styles.statusCard} ${styles.cardSpacing}`}>
-            <CardContent className="pt-6">
+            <CardContent>
               <div className={styles.statusContent}>
                 <AlertCircle className={styles.statusIcon} />
                 <div>
