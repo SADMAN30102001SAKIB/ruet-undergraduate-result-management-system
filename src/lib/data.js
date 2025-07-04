@@ -1,4 +1,4 @@
-import { pool } from "./postgres";
+import { pool, executeWithRetry } from "./postgres";
 import { getGradeFromMarks, getBacklogGradeFromMarks, calculateSGPAWithBacklog } from "./utils";
 
 // Department operations
@@ -834,13 +834,15 @@ export async function getEffectiveStudentResults(studentId) {
 
 export async function getResults() {
   try {
-    const result = await pool.query(`
-      SELECT r.*, s.name as student_name, c.course_code, c.course_name
-      FROM results r
-      JOIN students s ON r.student_id = s.id
-      JOIN courses c ON r.course_id = c.id
-      ORDER BY r.created_at DESC
-    `);
+    const result = await executeWithRetry(async () => {
+      return await pool.query(`
+        SELECT r.*, s.name as student_name, c.course_code, c.course_name
+        FROM results r
+        JOIN students s ON r.student_id = s.id
+        JOIN courses c ON r.course_id = c.id
+        ORDER BY r.created_at DESC
+      `);
+    });
 
     // Process each result to apply appropriate grading
     return result.rows.map((result) => {
@@ -855,6 +857,14 @@ export async function getResults() {
     });
   } catch (error) {
     console.error("Error in getResults:", error);
+
+    // Provide more specific error information for connection issues
+    if (error.code === "ECONNRESET" || error.code === "ETIMEDOUT") {
+      console.error(
+        "Database connection issue detected. This may be due to network latency or Neon PostgreSQL connection limits."
+      );
+    }
+
     throw error;
   }
 }
@@ -922,7 +932,14 @@ export async function createResult(result) {
     }
 
     // Use PostgreSQL transaction to prevent race conditions
-    const client = await pool.connect();
+    let client;
+    try {
+      client = await pool.connect();
+    } catch (connectionError) {
+      console.error("Database connection failed:", connectionError);
+      throw new Error("Database connection failed. Please check your database configuration.");
+    }
+
     try {
       await client.query("BEGIN");
 
@@ -955,8 +972,10 @@ export async function createResult(result) {
     }
   } catch (error) {
     if (error.code === "23505") {
-      // PostgreSQL unique violation
-      throw new Error("Result already exists for this student-course combination");
+      // PostgreSQL unique violation - indicates migration hasn't been applied yet
+      throw new Error(
+        "Database migration required: The unique constraint on results table needs to be removed to allow backlog entries. Please run the migration script or restart the application."
+      );
     }
     console.error("Error in createResult:", error);
     throw error;
@@ -1392,19 +1411,50 @@ export async function getCourseStudentCount(courseId) {
   }
 }
 
-// Get all courses with student counts
+// Get all courses with student counts (optimized single query with resilience and retry)
 export async function getCoursesWithStudentCounts() {
   try {
-    const courses = await getCourses();
-    const coursesWithCounts = await Promise.all(
-      courses.map(async (course) => ({
-        ...course,
-        student_count: await getCourseStudentCount(course.id),
-      }))
-    );
-    return coursesWithCounts;
+    console.log("Executing optimized getCoursesWithStudentCounts query...");
+    const startTime = Date.now();
+
+    const result = await executeWithRetry(async () => {
+      return await pool.query(`
+        SELECT c.*, d.name as department_name, d.code as department_code,
+               COALESCE(sc.student_count, 0) as student_count
+        FROM courses c 
+        JOIN departments d ON c.department_id = d.id 
+        LEFT JOIN (
+          SELECT course_id, COUNT(*) as student_count
+          FROM student_courses
+          GROUP BY course_id
+        ) sc ON c.id = sc.course_id
+        ORDER BY d.name, c.year, c.semester, c.course_code
+      `);
+    });
+
+    const endTime = Date.now();
+    console.log(`Query completed in ${endTime - startTime}ms, found ${result.rows.length} courses`);
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+      student_count: parseInt(row.student_count || 0),
+    }));
+
+    return processedRows;
   } catch (error) {
     console.error("Error in getCoursesWithStudentCounts:", error);
+
+    // Provide more specific error information for connection issues
+    if (error.code === "ECONNRESET" || error.code === "ETIMEDOUT") {
+      console.error(
+        "Database connection issue detected. This may be due to network latency or Neon PostgreSQL connection limits."
+      );
+    }
+
     throw error;
   }
 }
