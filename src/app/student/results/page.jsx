@@ -311,7 +311,7 @@ export default function StudentResults() {
                   <div className={styles.semesterSummary}>
                     <div className={styles.summaryGrid}>
                       <div>
-                        <span className={styles.summaryLabel}>Total Credits:</span>
+                        <span className={styles.summaryLabel}>Credits Earned:</span>
                         <span className={styles.summaryValue}>
                           {semesterResults.reduce((sum, r) => sum + r.credits, 0)}
                         </span>

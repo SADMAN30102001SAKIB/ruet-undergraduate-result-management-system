@@ -233,12 +233,35 @@ export default function StudentTranscript() {
                 </thead>
                 <tbody>
                   ${semesterResults
+                    .sort((a, b) => {
+                      // Primary sort: Pass/Fail status (passed courses first)
+                      const aGrade = getGradeFromMarks(a.marks);
+                      const bGrade = getGradeFromMarks(b.marks);
+                      const aIsPassed = aGrade.gradePoint > 0;
+                      const bIsPassed = bGrade.gradePoint > 0;
+
+                      if (aIsPassed !== bIsPassed) {
+                        return bIsPassed ? 1 : -1; // Passed courses first
+                      }
+
+                      // Secondary sort: Backlog status (regular results before backlog)
+                      if (a.is_backlog !== b.is_backlog) {
+                        return a.is_backlog ? 1 : -1; // Regular results first
+                      }
+
+                      // Tertiary sort: Course code (alphabetical)
+                      const codeComparison = a.course_code.localeCompare(b.course_code);
+                      if (codeComparison !== 0) return codeComparison;
+
+                      // Final sort: Course name
+                      return a.course_name.localeCompare(b.course_name);
+                    })
                     .map((result) => {
                       const gradeInfo = getGradeFromMarks(result.marks);
                       return `
                       <tr>
                         <td>${result.course_code}</td>
-                        <td>${result.course_name}</td>
+                        <td>${result.course_name}${result.is_backlog ? " (Backlog)" : ""}</td>
                         <td>${result.credits}</td>
                         <td>${result.marks}</td>
                         <td>${gradeInfo.grade}</td>
@@ -458,36 +481,65 @@ export default function StudentTranscript() {
                           </tr>
                         </thead>
                         <tbody>
-                          {semesterResults.map((result) => {
-                            const gradeInfo = getGradeFromMarks(result.marks);
-                            return (
-                              <tr key={result.id} className={styles.tableRow}>
-                                <td className={styles.tableCell}>
-                                  <span className={styles.courseCode}>{result.course_code}</span>
-                                </td>
-                                <td className={styles.tableCell}>
-                                  <span className={styles.courseName}>{result.course_name}</span>
-                                </td>
-                                <td className={styles.tableCellCenter}>
-                                  <span className={styles.credits}>{result.credits}</span>
-                                </td>
-                                <td className={styles.tableCellCenter}>
-                                  <span className={styles.gradePoint}>
-                                    {gradeInfo.gradePoint.toFixed(2)}
-                                  </span>
-                                </td>
-                                <td className={styles.tableCellCenter}>
-                                  <span
-                                    className={`${styles.gradeBadge} ${getGradeColor(
-                                      gradeInfo.grade
-                                    )}`}
-                                  >
-                                    {gradeInfo.grade}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                          {semesterResults
+                            .sort((a, b) => {
+                              // Primary sort: Pass/Fail status (passed courses first)
+                              const aGrade = getGradeFromMarks(a.marks);
+                              const bGrade = getGradeFromMarks(b.marks);
+                              const aIsPassed = aGrade.gradePoint > 0;
+                              const bIsPassed = bGrade.gradePoint > 0;
+
+                              if (aIsPassed !== bIsPassed) {
+                                return bIsPassed ? 1 : -1; // Passed courses first
+                              }
+
+                              // Secondary sort: Backlog status (regular results before backlog)
+                              if (a.is_backlog !== b.is_backlog) {
+                                return a.is_backlog ? 1 : -1; // Regular results first
+                              }
+
+                              // Tertiary sort: Course code (alphabetical)
+                              const codeComparison = a.course_code.localeCompare(b.course_code);
+                              if (codeComparison !== 0) return codeComparison;
+
+                              // Final sort: Course name
+                              return a.course_name.localeCompare(b.course_name);
+                            })
+                            .map((result) => {
+                              const gradeInfo = getGradeFromMarks(result.marks);
+                              return (
+                                <tr key={result.id} className={styles.tableRow}>
+                                  <td className={styles.tableCell}>
+                                    <span className={styles.courseCode}>{result.course_code}</span>
+                                  </td>
+                                  <td className={styles.tableCell}>
+                                    <span className={styles.courseName}>
+                                      {result.course_name}
+                                      {result.is_backlog && (
+                                        <span className={styles.backlogIndicator}> (Backlog)</span>
+                                      )}
+                                    </span>
+                                  </td>
+                                  <td className={styles.tableCellCenter}>
+                                    <span className={styles.credits}>{result.credits}</span>
+                                  </td>
+                                  <td className={styles.tableCellCenter}>
+                                    <span className={styles.gradePoint}>
+                                      {gradeInfo.gradePoint.toFixed(2)}
+                                    </span>
+                                  </td>
+                                  <td className={styles.tableCellCenter}>
+                                    <span
+                                      className={`${styles.gradeBadge} ${getGradeColor(
+                                        gradeInfo.grade
+                                      )}`}
+                                    >
+                                      {gradeInfo.grade}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
                     </div>

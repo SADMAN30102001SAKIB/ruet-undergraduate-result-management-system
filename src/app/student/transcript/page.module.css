@@ -295,6 +295,14 @@
   background-color: rgb(255 255 255 / 0.03);
 }
 
+.tableRow:has(.backlogIndicator) {
+  background-color: rgba(251, 191, 36, 0.05);
+}
+
+[data-theme="dark"] .tableRow:has(.backlogIndicator) {
+  background-color: rgba(251, 191, 36, 0.1);
+}
+
 .tableCell {
   padding: 1rem;
   vertical-align: top;
@@ -485,4 +493,16 @@
 .flexCenter {
   display: flex;
   align-items: center;
+}
+
+/* Backlog indicator styling */
+.backlogIndicator {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+[data-theme="dark"] .backlogIndicator {
+  color: #fbbf24;
 }
