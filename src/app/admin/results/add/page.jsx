@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { getGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Plus, AlertCircle } from "lucide-react";
@@ -233,9 +232,7 @@ export default function AddResult() {
                 <p className={styles.headerSubtitle}>Add new student result and grade</p>
               </div>
             </div>
-            <div className={styles.headerActions}>
-              <ThemeToggle />
-              <Link href="/admin/results">
+            <div className={styles.headerActions}>              <Link href="/admin/results">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.iconSm} ${styles.iconWithMargin}`} />
                   Back to Results

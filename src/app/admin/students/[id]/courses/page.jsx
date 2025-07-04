@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { getGradeFromMarks } from "@/lib/utils";
 import {
@@ -228,7 +227,6 @@ export default function StudentCoursesManagement({ params }) {
               </p>
             </div>
           </div>
-          <ThemeToggle />
         </header>
 
         {/* Student Info */}

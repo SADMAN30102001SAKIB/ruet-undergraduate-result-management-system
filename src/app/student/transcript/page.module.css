@@ -6,10 +6,6 @@
   padding: 2rem 1rem;
 }
 
-[data-theme="dark"] .container {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -21,10 +17,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-[data-theme="dark"] .loading {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
 }
 
 .loadingText {
@@ -190,10 +182,6 @@
   text-align: center;
 }
 
-[data-theme="dark"] .semesterCard {
-  background-color: rgb(255 255 255 / 0.05);
-}
-
 .semesterLabel {
   font-size: 0.875rem;
   color: var(--muted-foreground);
@@ -291,16 +279,8 @@
   background-color: rgb(0 0 0 / 0.03);
 }
 
-[data-theme="dark"] .tableRow:hover {
-  background-color: rgb(255 255 255 / 0.03);
-}
-
 .tableRow:has(.backlogIndicator) {
   background-color: rgba(251, 191, 36, 0.05);
-}
-
-[data-theme="dark"] .tableRow:has(.backlogIndicator) {
-  background-color: rgba(251, 191, 36, 0.1);
 }
 
 .tableCell {
@@ -349,19 +329,9 @@
   background-color: rgb(209 250 229);
 }
 
-[data-theme="dark"] .gradeAPlus {
-  color: rgb(52 211 153);
-  background-color: rgb(6 78 59);
-}
-
 .gradeA {
   color: rgb(22 163 74);
   background-color: rgb(220 252 231);
-}
-
-[data-theme="dark"] .gradeA {
-  color: rgb(34 197 94);
-  background-color: rgb(20 83 45);
 }
 
 .gradeAMinus {
@@ -369,19 +339,9 @@
   background-color: rgb(219 234 254);
 }
 
-[data-theme="dark"] .gradeAMinus {
-  color: rgb(96 165 250);
-  background-color: rgb(30 58 138);
-}
-
 .gradeBPlus {
   color: rgb(8 145 178);
   background-color: rgb(207 250 254);
-}
-
-[data-theme="dark"] .gradeBPlus {
-  color: rgb(34 211 238);
-  background-color: rgb(21 94 117);
 }
 
 .gradeB {
@@ -389,19 +349,9 @@
   background-color: rgb(224 231 255);
 }
 
-[data-theme="dark"] .gradeB {
-  color: rgb(129 140 248);
-  background-color: rgb(55 48 163);
-}
-
 .gradeBMinus {
   color: rgb(202 138 4);
   background-color: rgb(254 249 195);
-}
-
-[data-theme="dark"] .gradeBMinus {
-  color: rgb(250 204 21);
-  background-color: rgb(133 77 14);
 }
 
 .gradeCPlus {
@@ -409,19 +359,9 @@
   background-color: rgb(255 237 213);
 }
 
-[data-theme="dark"] .gradeCPlus {
-  color: rgb(251 146 60);
-  background-color: rgb(154 52 18);
-}
-
 .gradeC {
   color: rgb(217 119 6);
   background-color: rgb(255 243 199);
-}
-
-[data-theme="dark"] .gradeC {
-  color: rgb(245 158 11);
-  background-color: rgb(146 64 14);
 }
 
 .gradeD {
@@ -429,29 +369,14 @@
   background-color: rgb(252 231 243);
 }
 
-[data-theme="dark"] .gradeD {
-  color: rgb(244 114 182);
-  background-color: rgb(157 23 77);
-}
-
 .gradeF {
   color: rgb(220 38 38);
   background-color: rgb(254 242 242);
 }
 
-[data-theme="dark"] .gradeF {
-  color: rgb(248 113 113);
-  background-color: rgb(153 27 27);
-}
-
 .gradeDefault {
   color: rgb(107 114 128);
   background-color: rgb(243 244 246);
-}
-
-[data-theme="dark"] .gradeDefault {
-  color: rgb(156 163 175);
-  background-color: rgb(55 65 81);
 }
 
 /* No Results */
@@ -501,8 +426,4 @@
   color: #f59e0b;
   font-weight: 600;
   margin-left: 0.25rem;
-}
-
-[data-theme="dark"] .backlogIndicator {
-  color: #fbbf24;
 }

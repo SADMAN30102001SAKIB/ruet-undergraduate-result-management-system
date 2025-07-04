@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, BookOpen, Save, AlertCircle } from "lucide-react";
 import styles from "./page.module.css";
@@ -138,9 +137,7 @@ export default function AddCourse() {
                 <p className={styles.headerSubtitle}>Add new course to the academic curriculum</p>
               </div>
             </div>
-            <div className={styles.headerActions}>
-              <ThemeToggle />
-              <Link href="/admin/courses">
+            <div className={styles.headerActions}>              <Link href="/admin/courses">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.iconSm} ${styles.iconWithMargin}`} />
                   Back to Courses

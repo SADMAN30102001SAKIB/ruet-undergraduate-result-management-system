@@ -1,95 +1,3 @@
-/* Override hardcoded colors in dark mode */
-.dark {
-  /* Force all containers to use proper dark backgrounds */
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-.dark [class*="container"] {
-  background: linear-gradient(
-    to bottom right,
-    var(--color-gray-900),
-    var(--color-gray-800)
-  ) !important;
-}
-
-.dark [class*="header"] {
-  background: var(--color-background) !important;
-  border-bottom-color: var(--color-border) !important;
-}
-
-.dark [class*="card"] {
-  background: var(--color-card) !important;
-  color: var(--color-card-foreground) !important;
-  border-color: var(--color-border) !important;
-}
-
-.dark [class*="button"] {
-  border-color: var(--color-border) !important;
-}
-
-.dark [class*="input"],
-.dark [class*="select"],
-.dark [class*="textarea"] {
-  background: var(--color-background) !important;
-  color: var(--color-foreground) !important;
-  border-color: var(--color-border) !important;
-}
-
-.dark [class*="title"],
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5,
-.dark h6 {
-  color: var(--color-foreground) !important;
-}
-
-.dark [class*="subtitle"],
-.dark [class*="description"],
-.dark p {
-  color: var(--color-muted-foreground) !important;
-}
-
-.dark [class*="icon"] {
-  color: inherit !important;
-}
-
-/* Dark mode utility classes */
-.dark-bg-primary {
-  background-color: var(--color-background);
-}
-
-.dark-bg-secondary {
-  background-color: var(--color-card);
-}
-
-.dark-text-primary {
-  color: var(--color-foreground);
-}
-
-.dark-text-secondary {
-  color: var(--color-muted-foreground);
-}
-
-.dark-border {
-  border-color: var(--color-border);
-}
-
-/* Force dark mode backgrounds */
-.dark .force-dark-bg {
-  background: var(--color-background) !important;
-}
-
-.dark .force-dark-container {
-  background: linear-gradient(
-    to bottom right,
-    var(--color-gray-900),
-    var(--color-gray-800)
-  ) !important;
-}
-
 /* Utility classes to replace common Tailwind utilities */
 
 /* Display */
@@ -1043,11 +951,6 @@
   background-image: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
 }
 
-/* Dark mode gradient */
-[data-theme="dark"] .bg-gradient-to-br {
-  background-image: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 /* Border utilities */
 .border {
   border-width: 1px;
@@ -1231,29 +1134,6 @@
 }
 .opacity-50 {
   opacity: 0.5;
-}
-
-/* Dark mode variants */
-[data-theme="dark"] .dark-bg-gray-800 {
-  background-color: rgb(31 41 55);
-}
-[data-theme="dark"] .dark-bg-blue-950 {
-  background-color: rgb(23 37 84 / 0.2);
-}
-[data-theme="dark"] .dark-text-white {
-  color: white;
-}
-[data-theme="dark"] .dark-text-gray-400 {
-  color: rgb(156 163 175);
-}
-[data-theme="dark"] .dark-text-blue-200 {
-  color: rgb(191 219 254);
-}
-[data-theme="dark"] .dark-text-gray-200 {
-  color: rgb(229 231 235);
-}
-[data-theme="dark"] .dark-bg-blue-900 {
-  background-color: rgb(30 58 138);
 }
 
 /* Icon sizing utilities */

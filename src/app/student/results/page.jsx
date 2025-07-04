@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { getGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Trophy, TrendingUp, FileText, Award } from "lucide-react";
 import styles from "./page.module.css";
@@ -125,9 +124,7 @@ export default function StudentResults() {
                 View your published course results and academic performance
               </p>
             </div>
-          </div>
-          <ThemeToggle />
-        </header>
+          </div>        </header>
 
         {/* CGPA Overview */}
         <div className={styles.statsGrid}>

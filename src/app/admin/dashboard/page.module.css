@@ -5,10 +5,6 @@
   background: linear-gradient(135deg, var(--color-blue-50) 0%, var(--color-blue-100) 100%);
 }
 
-:global(.dark) .container {
-  background: linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-800) 100%);
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -91,18 +87,10 @@
   background-color: rgb(229 231 235);
 }
 
-:global([data-theme="dark"]) .loadingBar {
-  background-color: rgb(55 65 81);
-}
-
 .loadingBarLarge {
   height: 2rem;
   border-radius: 0.25rem;
   background-color: rgb(229 231 235);
-}
-
-:global([data-theme="dark"]) .loadingBarLarge {
-  background-color: rgb(55 65 81);
 }
 
 .statCard {
@@ -140,32 +128,16 @@
   color: rgb(37 99 235);
 }
 
-:global([data-theme="dark"]) .statIconBlue {
-  color: rgb(96 165 250);
-}
-
 .statIconGreen {
   color: rgb(22 163 74);
-}
-
-:global([data-theme="dark"]) .statIconGreen {
-  color: rgb(74 222 128);
 }
 
 .statIconPurple {
   color: rgb(147 51 234);
 }
 
-:global([data-theme="dark"]) .statIconPurple {
-  color: rgb(196 181 253);
-}
-
 .statIconOrange {
   color: rgb(234 88 12);
-}
-
-:global([data-theme="dark"]) .statIconOrange {
-  color: rgb(251 146 60);
 }
 
 .quickActions {
@@ -240,32 +212,16 @@
   background-color: rgb(239 246 255);
 }
 
-:global([data-theme="dark"]) .managementIconContainerBlue {
-  background-color: rgb(30 58 138);
-}
-
 .managementIconContainerGreen {
   background-color: rgb(240 253 244);
-}
-
-:global([data-theme="dark"]) .managementIconContainerGreen {
-  background-color: rgb(20 83 45);
 }
 
 .managementIconContainerPurple {
   background-color: rgb(250 245 255);
 }
 
-:global([data-theme="dark"]) .managementIconContainerPurple {
-  background-color: rgb(88 28 135);
-}
-
 .managementIconContainerOrange {
   background-color: rgb(255 247 237);
-}
-
-:global([data-theme="dark"]) .managementIconContainerOrange {
-  background-color: rgb(154 52 18);
 }
 
 .managementIcon {
@@ -277,32 +233,16 @@
   color: rgb(37 99 235);
 }
 
-:global([data-theme="dark"]) .managementIconBlue {
-  color: rgb(96 165 250);
-}
-
 .managementIconGreen {
   color: rgb(22 163 74);
-}
-
-:global([data-theme="dark"]) .managementIconGreen {
-  color: rgb(74 222 128);
 }
 
 .managementIconPurple {
   color: rgb(147 51 234);
 }
 
-:global([data-theme="dark"]) .managementIconPurple {
-  color: rgb(196 181 253);
-}
-
 .managementIconOrange {
   color: rgb(234 88 12);
-}
-
-:global([data-theme="dark"]) .managementIconOrange {
-  color: rgb(251 146 60);
 }
 
 .managementTitle {

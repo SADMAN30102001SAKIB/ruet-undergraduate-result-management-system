@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { GraduationCap, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -55,9 +54,7 @@ export default function AdminLogin() {
           <Link href="/" className={styles.headerBrand}>
             <GraduationCap className={styles.brandIcon} />
             <h1 className={styles.brandTitle}>SRMS</h1>
-          </Link>
-          <ThemeToggle />
-        </header>
+          </Link>        </header>
 
         {/* Login Form */}
         <div className={styles.formContainer}>

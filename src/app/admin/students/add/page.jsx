@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, UserPlus, Save, User } from "lucide-react";
 import styles from "./page.module.css";
@@ -135,9 +134,7 @@ export default function AddStudent() {
                 <p className={styles.headerSubtitle}>Add new student to the academic system</p>
               </div>
             </div>
-            <div className={styles.headerRight}>
-              <ThemeToggle />
-              <Link href="/admin/students">
+            <div className={styles.headerRight}>              <Link href="/admin/students">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.icon4} ${styles.mr2}`} />
                   Back to Students

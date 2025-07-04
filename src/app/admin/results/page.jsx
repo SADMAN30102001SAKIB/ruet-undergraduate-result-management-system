@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { getGradeFromMarks } from "@/lib/utils";
 import {
@@ -232,9 +231,7 @@ export default function AdminResults() {
               <h1 className={styles.headerTitle}>Results Management</h1>
               <p className={styles.headerSubtitle}>Manage student results and grades</p>
             </div>
-          </div>
-          <ThemeToggle />
-        </header>
+          </div>        </header>
 
         {/* Controls */}
         <div className={styles.controls}>

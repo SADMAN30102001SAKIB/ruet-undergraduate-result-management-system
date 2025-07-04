@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { GraduationCap, ShieldCheck, Users, BookOpen } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -15,7 +14,6 @@ export default function Home() {
             <GraduationCap className={styles.brandIcon} />
             <h1 className={styles.brandTitle}>Student Result Management System</h1>
           </div>
-          <ThemeToggle />
         </header>
 
         {/* Hero Section */}

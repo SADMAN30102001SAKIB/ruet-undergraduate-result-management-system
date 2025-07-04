@@ -5,10 +5,6 @@
   background: linear-gradient(135deg, rgb(239 246 255) 0%, rgb(224 242 254) 100%);
 }
 
-:global([data-theme="dark"]) .container {
-  background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 100%);
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -131,18 +127,10 @@
   justify-content: center;
 }
 
-:global([data-theme="dark"]) .studentIconContainer {
-  background-color: rgb(20 83 45);
-}
-
 .studentIcon {
   height: 2rem;
   width: 2rem;
   color: rgb(22 163 74);
-}
-
-:global([data-theme="dark"]) .studentIcon {
-  color: rgb(74 222 128);
 }
 
 .features {

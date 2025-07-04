@@ -50,24 +50,6 @@
   background-color: var(--color-info-bg, hsl(214 100% 97%));
 }
 
-/* Dark mode background colors */
-:global(.dark) .success {
-  background-color: var(--color-success-bg-dark, hsl(151 55% 18% / 0.3));
-}
-
-:global(.dark) .error {
-  background-color: var(--color-error-bg-dark, hsl(0 63% 31% / 0.3));
-}
-
-:global(.dark) .warning {
-  background-color: var(--color-warning-bg);
-}
-
-:global(.dark) .info,
-:global(.dark) .confirm {
-  background-color: var(--color-info-bg-dark, hsl(217 91% 60% / 0.2));
-}
-
 .header {
   display: flex;
   align-items: center;

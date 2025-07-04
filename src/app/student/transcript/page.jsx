@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { getGradeFromMarks } from "@/lib/utils";
 import {
@@ -336,9 +335,7 @@ export default function StudentTranscript() {
             <Button variant="outline" onClick={downloadTranscript}>
               <Download className={styles.downloadIcon} />
               Download PDF
-            </Button>
-            <ThemeToggle />
-          </div>
+            </Button>          </div>
         </header>
 
         {/* Student Info */}

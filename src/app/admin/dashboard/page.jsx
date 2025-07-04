@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   GraduationCap,
   LogOut,
@@ -118,9 +117,7 @@ export default function AdminDashboard() {
               <p className={styles.brandSubtitle}>Student Result Management System</p>
             </div>
           </div>
-          <div className={styles.headerActions}>
-            <ThemeToggle />
-            <Button onClick={handleLogout} variant="outline" size="sm">
+          <div className={styles.headerActions}>            <Button onClick={handleLogout} variant="outline" size="sm">
               <LogOut className={styles.logoutIcon} />
               Logout
             </Button>

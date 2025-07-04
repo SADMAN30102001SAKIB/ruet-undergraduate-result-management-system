@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, BookOpen, CheckCircle, Clock, AlertCircle } from "lucide-react";
 import styles from "./page.module.css";
@@ -140,9 +139,7 @@ export default function StudentRegister() {
                   } Semester`}
               </p>
             </div>
-          </div>
-          <ThemeToggle />
-        </header>
+          </div>        </header>
 
         {/* Current Semester Notice */}
         {profile && (

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import {
   GraduationCap,
@@ -344,9 +343,7 @@ export default function AdminStudents() {
               <p className={styles.brandSubtitle}>Add, edit, and manage student records</p>
             </div>
           </div>
-          <div className={styles.headerActions}>
-            <ThemeToggle />
-            <Link href="/admin/students/add">
+          <div className={styles.headerActions}>            <Link href="/admin/students/add">
               <Button>
                 <Plus className={styles.addIcon} />
                 Add Student

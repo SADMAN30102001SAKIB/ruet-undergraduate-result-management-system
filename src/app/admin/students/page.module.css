@@ -1,12 +1,8 @@
-﻿/* Admin Students Page - Tailwind to CSS Module Conversion */
+/* Admin Students Page - Tailwind to CSS Module Conversion */
 
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, rgb(239 246 255) 0%, rgb(224 242 254) 100%);
-}
-
-:global([data-theme="dark"]) .container {
-  background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 100%);
 }
 
 .content {
@@ -158,10 +154,6 @@
   flex: 1;
 }
 
-:global([data-theme="dark"]) .loadingBar {
-  background-color: rgb(55 65 81);
-}
-
 /* Empty State */
 .emptyState {
   text-align: center;
@@ -214,19 +206,10 @@
   border-radius: 0.5rem;
 }
 
-:global([data-theme="dark"]) .bulkActions {
-  background: rgba(29, 78, 216, 0.2);
-  border-color: rgba(29, 78, 216, 0.8);
-}
-
 .bulkText {
   font-size: 0.875rem;
   font-weight: 500;
   color: rgb(30 64 175);
-}
-
-:global([data-theme="dark"]) .bulkText {
-  color: rgb(147 197 253);
 }
 
 .bulkButtons {
@@ -295,10 +278,6 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
-:global([data-theme="dark"]) .tableRow:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
 .checkboxCell {
   padding: 1rem;
 }
@@ -358,11 +337,6 @@
   font-weight: 600;
 }
 
-:global([data-theme="dark"]) .departmentBadge {
-  background: rgba(29, 78, 216, 0.3);
-  color: rgb(147 197 253);
-}
-
 .yearText {
   font-weight: 500;
   color: var(--foreground);
@@ -400,22 +374,10 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-:global([data-theme="dark"]) .statusWarning {
-  background: rgba(180, 83, 9, 0.3);
-  border-color: rgb(251 191 36);
-  color: rgb(251 191 36);
-}
-
 .statusGood {
   background: rgb(219 234 254);
   border: 1px solid rgb(147 197 253);
   color: rgb(29 78 216);
-}
-
-:global([data-theme="dark"]) .statusGood {
-  background: rgba(29, 78, 216, 0.3);
-  border-color: rgb(59 130 246);
-  color: rgb(147 197 253);
 }
 
 .statusDanger {
@@ -425,54 +387,26 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-:global([data-theme="dark"]) .statusDanger {
-  background: rgba(185, 28, 28, 0.3);
-  border-color: rgb(248 113 113);
-  color: rgb(248 113 113);
-}
-
 .statusSuccess {
   background: rgb(220 252 231);
   border: 1px solid rgb(134 239 172);
   color: rgb(22 163 74);
 }
 
-:global([data-theme="dark"]) .statusSuccess {
-  background: rgba(22, 163, 74, 0.3);
-  border-color: rgb(34 197 94);
-  color: rgb(134 239 172);
-}
-
 .numberWarning {
   color: rgb(180 83 9);
-}
-
-:global([data-theme="dark"]) .numberWarning {
-  color: rgb(251 191 36);
 }
 
 .numberGood {
   color: rgb(37 99 235);
 }
 
-:global([data-theme="dark"]) .numberGood {
-  color: rgb(59 130 246);
-}
-
 .numberDanger {
   color: rgb(185 28 28);
 }
 
-:global([data-theme="dark"]) .numberDanger {
-  color: rgb(248 113 113);
-}
-
 .numberSuccess {
   color: rgb(22 163 74);
-}
-
-:global([data-theme="dark"]) .numberSuccess {
-  color: rgb(34 197 94);
 }
 
 .numberMuted {
@@ -491,18 +425,10 @@
   color: rgb(245 158 11);
 }
 
-:global([data-theme="dark"]) .warningIcon {
-  color: rgb(251 191 36);
-}
-
 .cgpaText {
   font-weight: 700;
   font-size: 1.125rem;
   color: rgb(37 99 235);
-}
-
-:global([data-theme="dark"]) .cgpaText {
-  color: rgb(59 130 246);
 }
 
 /* Action Buttons */

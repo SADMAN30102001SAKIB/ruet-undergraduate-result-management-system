@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, Building2, Plus, Edit, Trash2 } from "lucide-react";
 import styles from "./page.module.css";
@@ -109,9 +108,7 @@ export default function AdminDepartments() {
               <h1 className={styles.headerTitle}>Department Management</h1>
               <p className={styles.headerSubtitle}>Manage academic departments</p>
             </div>
-          </div>
-          <ThemeToggle />
-        </header>
+          </div>        </header>
 
         {/* Add Department Button */}
         <div className={styles.addButtonSection}>

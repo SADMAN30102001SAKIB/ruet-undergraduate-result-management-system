@@ -6,10 +6,6 @@
   padding: 2rem 1rem;
 }
 
-[data-theme="dark"] .container {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -166,11 +162,6 @@
   margin-bottom: 1.5rem;
 }
 
-[data-theme="dark"] .filterSummary {
-  background: rgb(30 58 138 / 0.2);
-  border-color: rgb(30 64 175);
-}
-
 .filterSummaryContent {
   display: flex;
   flex-wrap: wrap;
@@ -184,10 +175,6 @@
   color: rgb(30 64 175);
 }
 
-[data-theme="dark"] .filterSummaryLabel {
-  color: rgb(147 197 253);
-}
-
 .filterSummaryBadge {
   background: rgb(219 234 254);
   color: rgb(30 64 175);
@@ -195,17 +182,8 @@
   border-radius: 0.25rem;
 }
 
-[data-theme="dark"] .filterSummaryBadge {
-  background: rgb(30 64 175);
-  color: rgb(147 197 253);
-}
-
 .filterSummaryItem {
   color: rgb(29 78 216);
-}
-
-[data-theme="dark"] .filterSummaryItem {
-  color: rgb(147 197 253);
 }
 
 /* Table Card */
@@ -350,11 +328,6 @@
   font-weight: 600;
 }
 
-[data-theme="dark"] .departmentBadge {
-  background: rgb(30 58 138);
-  color: rgb(147 197 253);
-}
-
 .yearInfo {
   font-weight: 500;
 }
@@ -379,10 +352,6 @@
   font-weight: 700;
   font-size: 1.125rem;
   color: rgb(22 163 74);
-}
-
-[data-theme="dark"] .studentCount {
-  color: rgb(74 222 128);
 }
 
 .actionsContainer {

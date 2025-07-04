@@ -5,10 +5,6 @@
   background: linear-gradient(135deg, rgb(250 245 255) 0%, rgb(224 242 254) 100%);
 }
 
-:global([data-theme="dark"]) .container {
-  background: linear-gradient(135deg, rgb(17 24 39) 0%, rgb(31 41 55) 100%);
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -134,10 +130,6 @@
   background-color: rgb(229 231 235);
 }
 
-:global([data-theme="dark"]) .loadingBar {
-  background-color: rgb(55 65 81);
-}
-
 .noResults {
   text-align: center;
   padding: 3rem 1rem;
@@ -249,19 +241,9 @@
   color: rgb(22 163 74);
 }
 
-:global([data-theme="dark"]) .gradeA {
-  background-color: rgb(20 83 45);
-  color: rgb(74 222 128);
-}
-
 .gradeB {
   background-color: rgb(239 246 255);
   color: rgb(37 99 235);
-}
-
-:global([data-theme="dark"]) .gradeB {
-  background-color: rgb(30 58 138);
-  color: rgb(96 165 250);
 }
 
 .gradeC {
@@ -269,29 +251,14 @@
   color: rgb(146 64 14);
 }
 
-:global([data-theme="dark"]) .gradeC {
-  background-color: rgb(120 53 15);
-  color: rgb(253 224 71);
-}
-
 .gradeD {
   background-color: rgb(254 242 242);
   color: rgb(220 38 38);
 }
 
-:global([data-theme="dark"]) .gradeD {
-  background-color: rgb(127 29 29);
-  color: rgb(248 113 113);
-}
-
 .gradeF {
   background-color: rgb(254 242 242);
   color: rgb(220 38 38);
-}
-
-:global([data-theme="dark"]) .gradeF {
-  background-color: rgb(127 29 29);
-  color: rgb(248 113 113);
 }
 
 .credits {
@@ -319,11 +286,6 @@
   border-radius: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
-}
-
-:global([data-theme="dark"]) .backlogBadge {
-  background-color: rgb(120 53 15);
-  color: rgb(253 224 71);
 }
 
 .semesterGroup {
@@ -394,10 +356,6 @@
   background: linear-gradient(to right, rgb(239 246 255), rgb(224 231 255));
 }
 
-[data-theme="dark"] .sgpaCard {
-  background: linear-gradient(to right, rgb(30 58 138 / 0.2), rgb(55 48 163 / 0.2));
-}
-
 .sgpaSemester {
   font-size: 0.875rem;
   color: var(--muted-foreground);
@@ -443,19 +401,11 @@
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .loadingBar {
-  background-color: rgb(55 65 81);
-}
-
 .loadingBarShort {
   height: 0.75rem;
   background-color: rgb(229 231 235);
   border-radius: 0.25rem;
   width: 66.666667%;
-}
-
-[data-theme="dark"] .loadingBarShort {
-  background-color: rgb(55 65 81);
 }
 
 /* No Results */
@@ -539,10 +489,6 @@
   background-color: rgb(0 0 0 / 0.025);
 }
 
-[data-theme="dark"] .tableRow:hover {
-  background-color: rgb(255 255 255 / 0.025);
-}
-
 .tableCell {
   padding: 0.75rem;
   color: var(--foreground);
@@ -582,10 +528,6 @@
   background-color: var(--muted);
   background-color: rgb(0 0 0 / 0.025);
   border-radius: 0.5rem;
-}
-
-[data-theme="dark"] .semesterSummary {
-  background-color: rgb(255 255 255 / 0.025);
 }
 
 .summaryGrid {
@@ -637,20 +579,11 @@
   border-radius: 9999px;
 }
 
-[data-theme="dark"] .backlogLabel {
-  color: rgb(251 146 60);
-  background-color: rgb(154 52 18 / 0.2);
-}
-
 .backlogTableContainer {
   overflow-x: auto;
   background-color: rgb(255 237 213 / 0.5);
   border-radius: 0.5rem;
   padding: 1rem;
-}
-
-[data-theme="dark"] .backlogTableContainer {
-  background-color: rgb(154 52 18 / 0.1);
 }
 
 .backlogTableHeaderRow {
@@ -666,10 +599,6 @@
   background-color: rgb(254 215 170 / 0.5);
 }
 
-[data-theme="dark"] .backlogTableRow:hover {
-  background-color: rgb(154 52 18 / 0.2);
-}
-
 .statusPassed {
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -679,11 +608,6 @@
   color: rgb(21 128 61);
 }
 
-[data-theme="dark"] .statusPassed {
-  background-color: rgb(20 83 45);
-  color: rgb(34 197 94);
-}
-
 .statusFailed {
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -691,11 +615,6 @@
   font-size: 0.75rem;
   background-color: rgb(254 242 242);
   color: rgb(185 28 28);
-}
-
-[data-theme="dark"] .statusFailed {
-  background-color: rgb(153 27 27);
-  color: rgb(248 113 113);
 }
 
 /* Grading Scale */

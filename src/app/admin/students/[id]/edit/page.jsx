@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, Save, User } from "lucide-react";
 import styles from "./page.module.css";
@@ -183,7 +182,6 @@ export default function EditStudent({ params }) {
               </div>
             </div>
             <div className={styles.headerRight}>
-              <ThemeToggle />
               <Link href="/admin/students">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={styles.buttonIcon} />
