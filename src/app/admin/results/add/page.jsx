@@ -127,17 +127,17 @@ export default function AddResult() {
 
       if (departmentsRes.ok) {
         const departmentsData = await departmentsRes.json();
-        setDepartments(departmentsData);
+        setDepartments(departmentsData.departments || []);
       }
 
       if (studentsRes.ok) {
         const studentsData = await studentsRes.json();
-        setStudents(studentsData);
+        setStudents(studentsData.students || []);
       }
 
       if (coursesRes.ok) {
         const coursesData = await coursesRes.json();
-        setAllCourses(coursesData);
+        setAllCourses(coursesData.courses || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

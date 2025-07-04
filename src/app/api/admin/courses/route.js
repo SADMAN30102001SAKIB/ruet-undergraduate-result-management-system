@@ -57,7 +57,7 @@ export async function POST(request) {
         department_id: parseInt(department_id),
         year: parseInt(year),
         semester,
-        credits: parseInt(credits) || 3,
+        credits: parseFloat(credits) || 3,
         cgpa_weight: parseFloat(cgpa_weight) || 4.0,
       });
 

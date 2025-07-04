@@ -63,7 +63,7 @@ const initializeTables = async () => {
         department_id INTEGER REFERENCES departments(id),
         year INTEGER NOT NULL,
         semester VARCHAR(10) NOT NULL,
-        credits INTEGER NOT NULL,
+        credits DECIMAL(4,2) NOT NULL,
         cgpa_weight DECIMAL(3,2) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -201,6 +201,25 @@ const initializeTables = async () => {
         ALTER TABLE courses 
         ADD COLUMN IF NOT EXISTS cgpa_weight DECIMAL(3,2) DEFAULT 1.0
       `);
+
+      // Update credits column type to support decimal values
+      try {
+        await client.query(`
+          ALTER TABLE courses 
+          ALTER COLUMN credits TYPE DECIMAL(4,2) USING credits::decimal(4,2)
+        `);
+        console.log("Updated courses.credits column to support decimal values");
+      } catch (error) {
+        // Column might already be correct type or migration already applied
+        if (
+          !error.message.includes("already exists") &&
+          !error.message.includes("cannot be cast")
+        ) {
+          console.log(
+            "Credits column migration skipped (already applied or type conversion issue)"
+          );
+        }
+      }
     } catch (migrationError) {
       console.log("Migration note:", migrationError.message);
     }
