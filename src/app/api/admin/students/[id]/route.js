@@ -147,7 +147,7 @@ export async function PUT(request, { params }) {
         current_semester: data.current_semester,
       });
 
-      return NextResponse.json(updatedStudent);
+      return NextResponse.json({ student: updatedStudent });
     } catch (error) {
       if (error.message && error.message.includes("already exists")) {
         const message = error.message.toLowerCase();

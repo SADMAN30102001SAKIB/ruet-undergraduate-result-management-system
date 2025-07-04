@@ -73,7 +73,7 @@ export async function PUT(request, { params }) {
       return Response.json({ error: "Course not found or could not be updated" }, { status: 404 });
     }
 
-    return Response.json(updatedCourse);
+    return Response.json({ course: updatedCourse });
   } catch (error) {
     console.error("Error updating course:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

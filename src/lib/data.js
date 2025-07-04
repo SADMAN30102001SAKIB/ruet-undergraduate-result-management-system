@@ -324,7 +324,7 @@ export async function deleteStudent(id) {
       // Delete related records first
       await client.query("DELETE FROM results WHERE student_id = $1", [id]);
       await client.query("DELETE FROM student_courses WHERE student_id = $1", [id]);
-      await client.query("DELETE FROM semester_progress WHERE student_id = $1", [id]);
+      // Note: semester_progress table doesn't exist in our schema
 
       // Delete the student
       const result = await client.query("DELETE FROM students WHERE id = $1", [id]);

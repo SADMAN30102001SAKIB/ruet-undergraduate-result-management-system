@@ -68,7 +68,7 @@ export async function PUT(request, { params }) {
         return NextResponse.json({ error: "Department not found" }, { status: 404 });
       }
 
-      return NextResponse.json(department);
+      return NextResponse.json({ department });
     } catch (error) {
       if (error.message && error.message.includes("already exists")) {
         return NextResponse.json(
