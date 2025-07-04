@@ -23,7 +23,7 @@ A comprehensive web application for managing student records, course enrollment,
 
 - **Frontend**: Next.js 15 with JavaScript and App Router
 - **Database**: PostgreSQL (Neon) with pg library
-- **Styling**: CSS Modules with dark/light mode support
+- **Styling**: CSS Modules with modern styling
 - **Authentication**: Session-based auth with secure cookies
 - **UI Components**: Custom components following shadcn/ui patterns
 
@@ -107,8 +107,6 @@ src/
 │   └── api/               # API routes
 ├── components/            # Reusable UI components
 │   ├── ui/               # Base UI components
-│   ├── theme-provider.tsx
-│   └── theme-toggle.tsx
 ├── lib/                   # Utility libraries
 │   ├── auth.js           # Authentication functions
 │   ├── data.js           # Database operations
@@ -143,7 +141,6 @@ src/
 ### Modern UI/UX
 
 - Responsive design with CSS Modules
-- Dark/light mode theme switching
 - Form validation and error handling
 
 ## Development

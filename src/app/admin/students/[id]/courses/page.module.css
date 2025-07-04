@@ -3,20 +3,12 @@
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
 }
 
-.container.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 .loading {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.loading.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
 }
 
 .loadingText {
@@ -119,11 +111,6 @@
   border-radius: 0.25rem;
 }
 
-.currentBadge.dark {
-  background: rgb(30 58 138);
-  color: rgb(191 219 254);
-}
-
 .tableContainer {
   overflow-x: auto;
 }
@@ -158,10 +145,6 @@
   background: rgb(239 246 255);
 }
 
-.tableRowBacklog.dark {
-  background: rgb(30 58 138 / 0.2);
-}
-
 .tableCell {
   padding: 0.75rem;
 }
@@ -188,19 +171,9 @@
   color: rgb(30 64 175);
 }
 
-.badgeBacklog.dark {
-  background: rgb(30 58 138);
-  color: rgb(191 219 254);
-}
-
 .badgeRegular {
   background: rgb(243 244 246);
   color: rgb(31 41 55);
-}
-
-.badgeRegular.dark {
-  background: rgb(31 41 55);
-  color: rgb(209 213 219);
 }
 
 .statusContainer {

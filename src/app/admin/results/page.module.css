@@ -5,10 +5,6 @@
   background: linear-gradient(to bottom right, var(--color-blue-50), var(--color-indigo-100));
 }
 
-.dark .container {
-  background: linear-gradient(to bottom right, var(--color-gray-900), var(--color-gray-800));
-}
-
 .content {
   max-width: 1200px;
   margin: 0 auto;
@@ -22,10 +18,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.dark .loading {
-  background: linear-gradient(to bottom right, var(--color-gray-900), var(--color-gray-800));
 }
 
 .loadingText {
@@ -274,19 +266,9 @@
   background-color: var(--color-green-100);
 }
 
-.dark .gradeA {
-  background-color: var(--color-green-900);
-  color: var(--color-green-300);
-}
-
 .gradeB {
   color: var(--color-blue-600);
   background-color: var(--color-blue-100);
-}
-
-.dark .gradeB {
-  background-color: var(--color-blue-900);
-  color: var(--color-blue-300);
 }
 
 .gradeC {
@@ -294,19 +276,9 @@
   background-color: var(--color-yellow-100);
 }
 
-.dark .gradeC {
-  background-color: var(--color-yellow-900);
-  color: var(--color-yellow-300);
-}
-
 .gradeD {
   color: var(--color-orange-600);
   background-color: var(--color-orange-100);
-}
-
-.dark .gradeD {
-  background-color: var(--color-orange-900);
-  color: var(--color-orange-300);
 }
 
 .gradeF {
@@ -314,19 +286,9 @@
   background-color: var(--color-red-100);
 }
 
-.dark .gradeF {
-  background-color: var(--color-red-900);
-  color: var(--color-red-300);
-}
-
 .gradeDefault {
   color: var(--color-gray-600);
   background-color: var(--color-gray-100);
-}
-
-.dark .gradeDefault {
-  background-color: var(--color-gray-900);
-  color: var(--color-gray-300);
 }
 
 /* Status Badges */
@@ -343,19 +305,9 @@
   background-color: var(--color-orange-100);
 }
 
-.dark .statusBacklog {
-  background-color: var(--color-orange-900);
-  color: var(--color-orange-300);
-}
-
 .statusRegular {
   color: var(--color-blue-600);
   background-color: var(--color-blue-100);
-}
-
-.dark .statusRegular {
-  background-color: var(--color-blue-900);
-  color: var(--color-blue-300);
 }
 
 .statusPublished {
@@ -363,19 +315,9 @@
   background-color: var(--color-green-100);
 }
 
-.dark .statusPublished {
-  background-color: var(--color-green-900);
-  color: var(--color-green-300);
-}
-
 .statusDraft {
   color: var(--color-yellow-600);
   background-color: var(--color-yellow-100);
-}
-
-.dark .statusDraft {
-  background-color: var(--color-yellow-900);
-  color: var(--color-yellow-300);
 }
 
 /* Actions */

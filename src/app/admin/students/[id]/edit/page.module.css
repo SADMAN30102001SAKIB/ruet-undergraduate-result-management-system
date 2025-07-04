@@ -3,20 +3,12 @@
   background: linear-gradient(to bottom right, rgb(248 250 252), rgb(219 234 254));
 }
 
-.container.dark {
-  background: linear-gradient(to bottom right, rgb(15 23 42), rgb(30 41 59));
-}
-
 .loading {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(248 250 252), rgb(219 234 254));
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.loading.dark {
-  background: linear-gradient(to bottom right, rgb(15 23 42), rgb(30 41 59));
 }
 
 .loadingContent {
@@ -36,19 +28,10 @@
   color: rgb(75 85 99);
 }
 
-.loadingText.dark {
-  color: rgb(156 163 175);
-}
-
 .header {
   background: rgb(255 255 255);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border-bottom: 1px solid rgb(229 231 235);
-}
-
-.header.dark {
-  background: rgb(31 41 55);
-  border-bottom-color: rgb(75 85 99);
 }
 
 .headerContent {
@@ -101,17 +84,9 @@
   color: rgb(17 24 39);
 }
 
-.headerTitle.dark {
-  color: white;
-}
-
 .headerSubtitle {
   font-size: 0.875rem;
   color: rgb(75 85 99);
-}
-
-.headerSubtitle.dark {
-  color: rgb(156 163 175);
 }
 
 .headerRight {
@@ -199,12 +174,6 @@
 .select:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgb(37 99 235);
-}
-
-.select.dark {
-  background: rgb(31 41 55);
-  border-color: rgb(75 85 99);
-  color: white;
 }
 
 .errorInput {

@@ -3,20 +3,12 @@
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
 }
 
-.container.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 .loading {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.loading.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
 }
 
 .loadingText {
@@ -27,11 +19,6 @@
   background: rgb(255 255 255);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border-bottom: 1px solid rgb(229 231 235);
-}
-
-.header.dark {
-  background: rgb(31 41 55);
-  border-bottom-color: rgb(75 85 99);
 }
 
 .headerContent {
@@ -84,17 +71,9 @@
   color: rgb(17 24 39);
 }
 
-.headerTitle.dark {
-  color: rgb(255 255 255);
-}
-
 .headerSubtitle {
   font-size: 0.875rem;
   color: rgb(75 85 99);
-}
-
-.headerSubtitle.dark {
-  color: rgb(156 163 175);
 }
 
 .headerRight {

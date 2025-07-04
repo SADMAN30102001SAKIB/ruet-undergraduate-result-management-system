@@ -3,17 +3,9 @@
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
 }
 
-.container.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
-}
-
 .loadingContainer {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
-}
-
-.loadingContainer.dark {
-  background: linear-gradient(to bottom right, rgb(17 24 39), rgb(31 41 55));
 }
 
 .loadingContent {
@@ -40,19 +32,11 @@
   width: 33.333333%;
 }
 
-.loadingTitle.dark {
-  background: rgb(55 65 81);
-}
-
 .loadingSubtitle {
   height: 1rem;
   background: rgb(229 231 235);
   border-radius: 0.375rem;
   width: 50%;
-}
-
-.loadingSubtitle.dark {
-  background: rgb(55 65 81);
 }
 
 .loadingField {
@@ -67,29 +51,16 @@
   border-radius: 0.375rem;
 }
 
-.loadingLabel.dark {
-  background: rgb(55 65 81);
-}
-
 .loadingInput {
   height: 2.5rem;
   background: rgb(229 231 235);
   border-radius: 0.375rem;
 }
 
-.loadingInput.dark {
-  background: rgb(55 65 81);
-}
-
 .header {
   background: rgb(255 255 255);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   border-bottom: 1px solid rgb(229 231 235);
-}
-
-.header.dark {
-  background: rgb(31 41 55);
-  border-bottom-color: rgb(75 85 99);
 }
 
 .headerContent {
@@ -142,17 +113,9 @@
   color: rgb(17 24 39);
 }
 
-.headerTitle.dark {
-  color: white;
-}
-
 .headerSubtitle {
   font-size: 0.875rem;
   color: rgb(75 85 99);
-}
-
-.headerSubtitle.dark {
-  color: rgb(156 163 175);
 }
 
 .headerRight {
