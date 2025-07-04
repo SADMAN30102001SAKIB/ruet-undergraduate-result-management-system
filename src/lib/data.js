@@ -1091,13 +1091,6 @@ export async function getStudentCGPA(studentId) {
   try {
     const { regularResults, backlogResults } = await getStudentResultsWithBacklog(studentId);
 
-    console.log(`CGPA Debug for student ${studentId}:`, {
-      regularResultsCount: regularResults.length,
-      backlogResultsCount: backlogResults.length,
-      sampleRegularResult: regularResults[0],
-      sampleBacklogResult: backlogResults[0],
-    });
-
     // Create a map to track the best result for each course, preserving backlog status
     const effectiveResults = new Map();
 
@@ -1120,11 +1113,6 @@ export async function getStudentCGPA(studentId) {
       return a.course_code.localeCompare(b.course_code);
     });
 
-    console.log(`Effective results for CGPA calculation:`, {
-      effectiveResultsCount: results.length,
-      sampleEffectiveResult: results[0],
-    });
-
     // Group results by semester
     const semesterGroups = results.reduce((acc, result) => {
       const key = `${result.year}-${result.semester}`;
@@ -1141,7 +1129,6 @@ export async function getStudentCGPA(studentId) {
     const sgpas = Object.entries(semesterGroups).map(([key, semesterResults]) => {
       const [year, semester] = key.split("-");
       const sgpa = calculateSGPAWithBacklog(semesterResults);
-      console.log(`SGPA for ${key}:`, sgpa, `from ${semesterResults.length} results`);
       return {
         year: parseInt(year),
         semester,
@@ -1154,12 +1141,6 @@ export async function getStudentCGPA(studentId) {
       sgpas.length > 0
         ? Number((sgpas.reduce((sum, sem) => sum + sem.sgpa, 0) / sgpas.length).toFixed(2))
         : 0;
-
-    console.log(`Final CGPA calculation:`, {
-      sgpasCount: sgpas.length,
-      sgpas: sgpas,
-      calculatedCGPA: cgpa,
-    });
 
     return { sgpas, cgpa };
   } catch (error) {
@@ -1442,9 +1423,6 @@ export async function getCourseStudentCount(courseId) {
 // Get all courses with student counts (optimized single query with resilience and retry)
 export async function getCoursesWithStudentCounts() {
   try {
-    console.log("Executing optimized getCoursesWithStudentCounts query...");
-    const startTime = Date.now();
-
     const result = await executeWithRetry(async () => {
       return await pool.query(`
         SELECT c.*, d.name as department_name, d.code as department_code,
@@ -1459,9 +1437,6 @@ export async function getCoursesWithStudentCounts() {
         ORDER BY d.name, c.year, c.semester, c.course_code
       `);
     });
-
-    const endTime = Date.now();
-    console.log(`Query completed in ${endTime - startTime}ms, found ${result.rows.length} courses`);
 
     // Convert numeric fields to ensure proper types
     const processedRows = result.rows.map((row) => ({

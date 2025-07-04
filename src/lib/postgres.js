@@ -25,20 +25,8 @@ const pool = new Pool({
 });
 
 // Add connection pool event handlers for monitoring
-pool.on("connect", () => {
-  console.log("New database connection established");
-});
-
 pool.on("error", (err) => {
   console.error("Unexpected error on idle database client:", err.message);
-});
-
-pool.on("acquire", () => {
-  console.log("Connection acquired from pool");
-});
-
-pool.on("release", () => {
-  console.log("Connection released back to pool");
 });
 
 // Retry wrapper for database operations with exponential backoff
@@ -74,7 +62,10 @@ const initializeTables = async () => {
     client = await executeWithRetry(async () => {
       return await pool.connect();
     });
-    console.log("Successfully connected to PostgreSQL database");
+    // Only log connection success in production or if debug mode is enabled
+    if (process.env.NODE_ENV === "production" || process.env.DEBUG_DB) {
+      console.log("Successfully connected to PostgreSQL database");
+    }
   } catch (error) {
     console.error("Failed to connect to PostgreSQL database:", error.message);
     console.error("Please check your DATABASE_URL and ensure PostgreSQL is accessible");
@@ -328,7 +319,10 @@ const initializeTables = async () => {
       console.log("Migration note:", migrationError.message);
     }
 
-    console.log("PostgreSQL tables initialized successfully");
+    // Only log initialization success in production or debug mode
+    if (process.env.NODE_ENV === "production" || process.env.DEBUG_DB) {
+      console.log("PostgreSQL tables initialized successfully");
+    }
   } catch (error) {
     console.error("Error initializing tables:", error);
   } finally {
