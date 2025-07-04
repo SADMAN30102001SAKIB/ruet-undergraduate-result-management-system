@@ -352,7 +352,16 @@ export async function getCourses() {
       JOIN departments d ON c.department_id = d.id 
       ORDER BY d.name, c.year, c.semester, c.course_code
     `);
-    return result.rows;
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+    }));
+
+    return processedRows;
   } catch (error) {
     console.error("Error in getCourses:", error);
     throw error;
@@ -371,7 +380,16 @@ export async function getCoursesByDepartment(departmentId) {
     `,
       [departmentId]
     );
-    return result.rows;
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+    }));
+
+    return processedRows;
   } catch (error) {
     console.error("Error in getCoursesByDepartment:", error);
     throw error;
@@ -494,6 +512,17 @@ export async function getCourseById(courseId) {
     `,
       [courseId]
     );
+
+    if (result.rows[0]) {
+      // Convert numeric fields to ensure proper types
+      return {
+        ...result.rows[0],
+        credits: parseFloat(result.rows[0].credits || 0),
+        cgpa_weight: parseFloat(result.rows[0].cgpa_weight || 0),
+        year: parseInt(result.rows[0].year || 1),
+      };
+    }
+
     return result.rows[0];
   } catch (error) {
     console.error("Error fetching course:", error);
@@ -589,7 +618,16 @@ export async function getStudentRegistrations(studentId, currentYear, currentSem
     query += ` ORDER BY c.year, c.semester, c.course_code`;
 
     const result = await pool.query(query, params);
-    return result.rows;
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+    }));
+
+    return processedRows;
   } catch (error) {
     console.error("Error in getStudentRegistrations:", error);
     throw error;
@@ -618,7 +656,16 @@ export async function getAvailableCoursesForStudent(
     `,
       [departmentId, currentYear, currentSemester, studentId]
     );
-    return result.rows;
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+    }));
+
+    return processedRows;
   } catch (error) {
     console.error("Error in getAvailableCoursesForStudent:", error);
     throw error;
@@ -1119,6 +1166,70 @@ export async function getRegisteredCoursesForStudent(studentId, filters = {}) {
     return result.rows;
   } catch (error) {
     console.error("Error in getRegisteredCoursesForStudent:", error);
+    throw error;
+  }
+}
+
+// Get registered courses that are available for result entry/editing
+// Returns courses that either have no result, unpublished results, or published failing results
+export async function getCoursesAvailableForResultEntry(studentId, filters = {}) {
+  try {
+    let query = `
+      SELECT c.*, d.name as department_name, d.code as department_code,
+             r.marks, r.published, r.is_backlog, r.id as result_id,
+             CASE WHEN r.id IS NULL THEN 0 ELSE 1 END as has_result
+      FROM courses c 
+      JOIN departments d ON c.department_id = d.id 
+      JOIN student_courses cr ON c.id = cr.course_id
+      LEFT JOIN results r ON c.id = r.course_id AND r.student_id = $1
+        AND r.id = (
+          SELECT r2.id FROM results r2 
+          WHERE r2.course_id = c.id AND r2.student_id = $1
+          ORDER BY r2.marks DESC, r2.created_at DESC 
+          LIMIT 1
+        )
+      WHERE cr.student_id = $1
+        AND (
+          r.id IS NULL OR                           -- No result yet
+          r.published = false OR                    -- Unpublished result
+          (r.published = true AND r.marks < 40)    -- Published failing result (F grade)
+        )
+    `;
+
+    const params = [studentId];
+    let paramCount = 2;
+
+    // Apply filters if provided
+    if (filters.departmentId) {
+      query += ` AND c.department_id = $${paramCount++}`;
+      params.push(parseInt(filters.departmentId));
+    }
+
+    if (filters.year) {
+      query += ` AND c.year = $${paramCount++}`;
+      params.push(parseInt(filters.year));
+    }
+
+    if (filters.semester) {
+      query += ` AND c.semester = $${paramCount++}`;
+      params.push(filters.semester);
+    }
+
+    query += ` ORDER BY c.year, c.semester, c.course_code`;
+
+    const result = await pool.query(query, params);
+
+    // Convert numeric fields to ensure proper types
+    const processedRows = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+    }));
+
+    return processedRows;
+  } catch (error) {
+    console.error("Error in getCoursesAvailableForResultEntry:", error);
     throw error;
   }
 }

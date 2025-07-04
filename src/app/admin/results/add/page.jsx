@@ -96,14 +96,14 @@ export default function AddResult() {
         queryParams.append("semester", selectedSemester);
       }
 
-      // Get registered courses for the selected student with filters
-      const url = `/api/admin/students/${formData.student_id}/courses${
+      // Get courses available for result entry (no result, unpublished, or failed results)
+      const url = `/api/admin/students/${formData.student_id}/available-result-courses${
         queryParams.toString() ? `?${queryParams.toString()}` : ""
       }`;
       const response = await fetch(url);
       if (response.ok) {
-        const registeredCourses = await response.json();
-        setFilteredCourses(registeredCourses);
+        const data = await response.json();
+        setFilteredCourses(data.courses || []);
       } else {
         setFilteredCourses([]);
       }
@@ -214,7 +214,9 @@ export default function AddResult() {
   };
 
   const selectedStudent = filteredStudents.find((s) => s.id.toString() === formData.student_id);
-  const selectedCourse = filteredCourses.find((c) => c.id.toString() === formData.course_id);
+  const selectedCourse = Array.isArray(filteredCourses)
+    ? filteredCourses.find((c) => c.id.toString() === formData.course_id)
+    : null;
 
   return (
     <div className={styles.container}>
@@ -382,18 +384,19 @@ export default function AddResult() {
                     <option value="">
                       {!formData.student_id
                         ? "Select a student first"
-                        : filteredCourses.length === 0
+                        : !Array.isArray(filteredCourses) || filteredCourses.length === 0
                         ? selectedYear || selectedSemester
                           ? "No registered courses found for selected filters"
                           : "No registered courses found"
                         : "Select a course"}
                     </option>
-                    {filteredCourses.map((course, index) => (
-                      <option key={`course-${course.id}-${index}`} value={course.id.toString()}>
-                        {course.course_code} - {course.course_name} (Year {course.year},{" "}
-                        {course.semester})
-                      </option>
-                    ))}
+                    {Array.isArray(filteredCourses) &&
+                      filteredCourses.map((course, index) => (
+                        <option key={`course-${course.id}-${index}`} value={course.id.toString()}>
+                          {course.course_code} - {course.course_name} (Year {course.year},{" "}
+                          {course.semester})
+                        </option>
+                      ))}
                   </select>
                   {errors.course_id && (
                     <p className={styles.errorMessage}>

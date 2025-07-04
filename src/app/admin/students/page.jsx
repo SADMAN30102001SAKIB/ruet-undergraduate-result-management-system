@@ -126,9 +126,12 @@ export default function AdminStudents() {
                 fetch(`/api/admin/students/${student.id}/cgpa`),
                 fetch(`/api/admin/students/${student.id}/passed-exams`),
               ]);
-              const registeredCourses = regRes.ok ? await regRes.json() : [];
+              const registeredData = regRes.ok ? await regRes.json() : { courses: [] };
               const cgpaData = cgpaRes.ok ? await cgpaRes.json() : { cgpa: 0 };
               const passedData = passedRes.ok ? await passedRes.json() : { passed: 0, total: 0 };
+
+              // Extract the courses array from the wrapped response
+              const registeredCourses = registeredData.courses || [];
 
               // Count unique courses (not counting backlog as separate registration)
               // Since the API returns separate rows for regular and backlog results of the same course,

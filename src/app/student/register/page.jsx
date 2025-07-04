@@ -113,7 +113,10 @@ export default function StudentRegister() {
     return "th";
   };
 
-  const totalCredits = registeredCourses.reduce((sum, course) => sum + course.credits, 0);
+  const totalCredits = registeredCourses.reduce(
+    (sum, course) => sum + parseFloat(course.credits || 0),
+    0
+  );
 
   return (
     <div className={styles.container}>
