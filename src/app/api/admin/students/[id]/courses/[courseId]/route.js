@@ -19,13 +19,13 @@ export async function DELETE(request, { params }) {
     }
 
     // Check if unregistration is allowed
-    const unregisterCheck = canUnregisterStudentFromCourse(studentId, courseIdNum);
+    const unregisterCheck = await canUnregisterStudentFromCourse(studentId, courseIdNum);
 
     if (!unregisterCheck.canUnregister) {
       return NextResponse.json({ error: unregisterCheck.error }, { status: 400 });
     }
 
-    const success = unregisterStudentFromCourse(studentId, courseIdNum);
+    const success = await unregisterStudentFromCourse(studentId, courseIdNum);
 
     if (success) {
       return NextResponse.json({ success: true });

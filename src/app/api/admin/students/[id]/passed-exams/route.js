@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid student ID" }, { status: 400 });
     }
 
-    const passedExams = getStudentPassedExamsCount(studentId);
+    const passedExams = await getStudentPassedExamsCount(studentId);
     return NextResponse.json(passedExams);
   } catch (error) {
     console.error("Error fetching passed exams:", error);

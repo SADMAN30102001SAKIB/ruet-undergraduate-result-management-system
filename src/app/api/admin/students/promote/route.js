@@ -26,7 +26,7 @@ export async function POST(request) {
       );
     }
 
-    const results = promoteStudentsToNextSemester(validIds);
+    const results = await promoteStudentsToNextSemester(validIds);
 
     return NextResponse.json({
       success: results.success,

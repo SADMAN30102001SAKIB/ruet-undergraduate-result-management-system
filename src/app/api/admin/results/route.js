@@ -10,8 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const results = getResults();
-    return NextResponse.json(results);
+    const results = await getResults();
+    return NextResponse.json({ results });
   } catch (error) {
     console.error("Error fetching results:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -41,14 +41,14 @@ export async function POST(request) {
       return NextResponse.json({ error: "Marks must be between 0 and 100" }, { status: 400 });
     } // Create the result
     try {
-      const result = createResult({
+      const result = await createResult({
         student_id,
         course_id,
         marks,
         published: published || false,
       });
 
-      return NextResponse.json(result, { status: 201 });
+      return NextResponse.json({ result }, { status: 201 });
     } catch (error) {
       console.error("Error creating result:", error);
 

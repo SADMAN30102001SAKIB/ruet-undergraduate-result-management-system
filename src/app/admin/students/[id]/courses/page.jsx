@@ -61,7 +61,7 @@ export default function StudentCoursesManagement({ params }) {
       const registeredResponse = await fetch(`/api/admin/students/${resolvedParams.id}/courses`);
       if (registeredResponse.ok) {
         const registeredData = await registeredResponse.json();
-        setRegisteredCourses(registeredData);
+        setRegisteredCourses(registeredData.courses || []);
       }
 
       // Fetch available courses for current semester
@@ -70,7 +70,7 @@ export default function StudentCoursesManagement({ params }) {
       );
       if (availableResponse.ok) {
         const availableData = await availableResponse.json();
-        setAvailableCourses(availableData);
+        setAvailableCourses(availableData.courses || []);
       }
     } catch (error) {
       console.error("Failed to fetch courses:", error);
@@ -88,7 +88,7 @@ export default function StudentCoursesManagement({ params }) {
       const registeredResponse = await fetch(`/api/admin/students/${resolvedParams.id}/courses`);
       if (registeredResponse.ok) {
         const registeredData = await registeredResponse.json();
-        setRegisteredCourses(registeredData);
+        setRegisteredCourses(registeredData.courses || []);
       }
 
       // Fetch available courses for current semester
@@ -97,7 +97,7 @@ export default function StudentCoursesManagement({ params }) {
       );
       if (availableResponse.ok) {
         const availableData = await availableResponse.json();
-        setAvailableCourses(availableData);
+        setAvailableCourses(availableData.courses || []);
       }
     } catch (error) {
       console.error("Failed to refresh courses:", error);

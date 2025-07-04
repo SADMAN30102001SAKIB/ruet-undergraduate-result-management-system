@@ -29,8 +29,8 @@ export async function GET(request, { params }) {
       semester: searchParams.get("semester"),
     };
 
-    const courses = getRegisteredCoursesForStudent(studentId, filters);
-    return NextResponse.json(courses);
+    const courses = await getRegisteredCoursesForStudent(studentId, filters);
+    return NextResponse.json({ courses });
   } catch (error) {
     console.error("Error fetching student courses:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -60,14 +60,14 @@ export async function POST(request, { params }) {
     }
 
     // Check if already registered
-    if (isStudentRegisteredForCourse(studentId, parseInt(courseId))) {
+    if (await isStudentRegisteredForCourse(studentId, parseInt(courseId))) {
       return NextResponse.json(
         { error: "Student is already registered for this course" },
         { status: 400 }
       );
     }
 
-    const registration = registerStudentForCourse(studentId, parseInt(courseId));
+    const registration = await registerStudentForCourse(studentId, parseInt(courseId));
     return NextResponse.json(registration);
   } catch (error) {
     console.error("Error registering student for course:", error);

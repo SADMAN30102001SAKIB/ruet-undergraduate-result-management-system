@@ -93,8 +93,10 @@ export default function AdminStudents() {
       ]);
 
       if (studentsRes.ok && coursesRes.ok) {
-        const studentsData = await studentsRes.json();
-        const coursesData = await coursesRes.json();
+        const studentsResponse = await studentsRes.json();
+        const coursesResponse = await coursesRes.json();
+        const studentsData = studentsResponse.students || [];
+        const coursesData = coursesResponse.courses || [];
 
         // Calculate course registration data for each student
         const studentsWithCourseData = await Promise.all(

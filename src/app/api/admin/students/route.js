@@ -11,8 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const students = getStudents();
-    return NextResponse.json(students);
+    const students = await getStudents();
+    return NextResponse.json({ students });
   } catch (error) {
     console.error("Admin students fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -85,7 +85,7 @@ export async function POST(request) {
     }
 
     try {
-      const student = createStudent({
+      const student = await createStudent({
         name: data.name.trim(),
         parent_name: data.parent_name.trim(),
         phone: data.phone.trim(),
@@ -97,32 +97,31 @@ export async function POST(request) {
         current_semester: data.current_semester,
       });
 
-      return NextResponse.json(student, { status: 201 });
+      return NextResponse.json({ student }, { status: 201 });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string"
-      ) {
-        const message = error.message;
-        if (message.includes("UNIQUE constraint failed")) {
-          if (message.includes("roll_number")) {
-            return NextResponse.json(
-              { error: "Roll number already exists", field: "roll_number" },
-              { status: 409 }
-            );
-          }
-          if (message.includes("registration_number")) {
-            return NextResponse.json(
-              {
-                error: "Registration number already exists",
-                field: "registration_number",
-              },
-              { status: 409 }
-            );
-          }
+      if (error.message && error.message.includes("already exists")) {
+        // The data layer provides generic error, but we can check for specific patterns
+        const message = error.message.toLowerCase();
+        if (message.includes("roll number")) {
+          return NextResponse.json(
+            { error: "Roll number already exists", field: "roll_number" },
+            { status: 409 }
+          );
         }
+        if (message.includes("registration number")) {
+          return NextResponse.json(
+            {
+              error: "Registration number already exists",
+              field: "registration_number",
+            },
+            { status: 409 }
+          );
+        }
+        // Generic duplicate error
+        return NextResponse.json(
+          { error: "Student with this roll number or registration number already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }

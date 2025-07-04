@@ -22,7 +22,7 @@ A comprehensive web application for managing student records, course enrollment,
 ## Technology Stack
 
 - **Frontend**: Next.js 15 with JavaScript and App Router
-- **Database**: SQLite with better-sqlite3
+- **Database**: PostgreSQL (Neon) with pg library
 - **Styling**: CSS Modules with dark/light mode support
 - **Authentication**: Session-based auth with secure cookies
 - **UI Components**: Custom components following shadcn/ui patterns
@@ -33,6 +33,7 @@ A comprehensive web application for managing student records, course enrollment,
 
 - Node.js 18+
 - npm or yarn package manager
+- PostgreSQL database (Neon recommended)
 
 ### Installation
 
@@ -49,13 +50,23 @@ cd student-result-management-system
 npm install
 ```
 
-3. Start the development server:
+3. Set up environment variables:
+
+Create a `.env.local` file in the root directory:
+
+```env
+POSTGRES_URL="your-postgresql-connection-string"
+```
+
+For Neon PostgreSQL, get your connection string from your Neon dashboard.
+
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Default Credentials
 
@@ -70,15 +81,21 @@ Students can log in using their roll number and registration number (to be creat
 
 ## Database Schema
 
-The application uses SQLite with the following main tables:
+The application uses **PostgreSQL** with the following main tables:
 
 - **admin**: Administrative user accounts
 - **departments**: Academic departments (CSE, EEE, ME, etc.)
 - **students**: Student profiles and academic information
 - **courses**: Course catalog with semester mappings
-- **course_registrations**: Student course enrollments
+- **student_courses**: Student course enrollments
 - **results**: Academic results and grades
-- **semester_progress**: Semester completion tracking
+
+### Database Features
+
+- **Automatic Schema Creation**: Tables and relationships are created automatically
+- **Migration Support**: Built-in migration system for schema updates
+- **Connection Pooling**: Optimized database connections for scalability
+- **Data Integrity**: Foreign key constraints and validation rules
 
 ## Project Structure
 
@@ -93,11 +110,10 @@ src/
 │   ├── theme-provider.tsx
 │   └── theme-toggle.tsx
 ├── lib/                   # Utility libraries
-│   ├── auth.ts           # Authentication functions
-│   ├── data.ts           # Database operations
-│   ├── database.ts       # SQLite setup and schema
-│   ├── utils.ts          # Utility functions
-│   └── seed.ts           # Sample data seeding
+│   ├── auth.js           # Authentication functions
+│   ├── data.js           # Database operations
+│   ├── postgres.js       # PostgreSQL setup and schema
+│   └── utils.js          # Utility functions
 └── middleware.ts          # Route protection middleware
 ```
 
@@ -141,31 +157,73 @@ src/
 
 ### Database Management
 
-The SQLite database is automatically created and seeded with sample data in development mode. Sample departments and courses are created for testing purposes.
+The PostgreSQL database is automatically initialized with the required schema on first run. The system includes:
+
+- **Automatic table creation** with proper relationships
+- **Schema migration** support for updates
+- **Sample data seeding** for testing purposes
+- **Connection pooling** for optimal performance
+
+### Environment Configuration
+
+Required environment variables:
+
+```env
+POSTGRES_URL="postgresql://username:password@host:port/database"
+```
+
+### Testing
+
+A comprehensive verification script is included to test all APIs:
+
+```bash
+node comprehensive-verification.mjs
+```
+
+This script tests all 32 endpoints and ensures full functionality.
 
 ### Adding New Features
 
-1. Create database schema changes in `lib/database.ts`
-2. Add data access functions in `lib/data.ts`
+1. Create database schema changes in `lib/postgres.js`
+2. Add data access functions in `lib/data.js`
 3. Create API routes in `app/api/`
 4. Build UI components and pages
 5. Update middleware for route protection if needed
+6. Run the verification script to ensure functionality
 
 ## Deployment
 
-1. Build the application:
+### Production Setup
+
+1. Set up a PostgreSQL database (Neon recommended for serverless)
+
+2. Configure environment variables:
+
+```env
+POSTGRES_URL="your-production-postgresql-url"
+```
+
+3. Build the application:
 
 ```bash
 npm run build
 ```
 
-2. Start the production server:
+4. Start the production server:
 
 ```bash
 npm start
 ```
 
-The application can be deployed to platforms like Vercel, Netlify, or any Node.js hosting service.
+The application can be deployed to platforms like Vercel, Netlify, Railway, or any Node.js hosting service that supports PostgreSQL connections.
+
+### Verification
+
+After deployment, run the verification script to ensure all APIs are working:
+
+```bash
+node comprehensive-verification.mjs
+```
 
 ## Contributing
 

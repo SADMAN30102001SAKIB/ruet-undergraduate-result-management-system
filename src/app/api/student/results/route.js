@@ -14,9 +14,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const resultsData = getStudentResultsWithBacklog(user.id);
-    const cgpaData = getStudentCGPA(user.id);
-    const effectiveResults = getEffectiveStudentResults(user.id); // Combine regular and backlog results into a single array for transcript
+    const resultsData = await getStudentResultsWithBacklog(user.id);
+    const cgpaData = await getStudentCGPA(user.id);
+    const effectiveResults = await getEffectiveStudentResults(user.id); // Combine regular and backlog results into a single array for transcript
     const allResults = [...resultsData.regularResults, ...resultsData.backlogResults];
     const responseData = {
       results: allResults,

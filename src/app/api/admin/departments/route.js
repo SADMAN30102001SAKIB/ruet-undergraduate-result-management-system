@@ -10,8 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const departments = getDepartmentsWithCounts();
-    return NextResponse.json(departments);
+    const departments = await getDepartmentsWithCounts();
+    return NextResponse.json({ departments });
   } catch (error) {
     console.error("Admin departments fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -42,17 +42,14 @@ export async function POST(request) {
     }
 
     try {
-      const department = createDepartment(name.trim(), code.toUpperCase());
-      return NextResponse.json(department, { status: 201 });
+      const department = await createDepartment(name.trim(), code.toUpperCase());
+      return NextResponse.json({ department }, { status: 201 });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
-        return NextResponse.json({ error: "Department code already exists" }, { status: 409 });
+      if (error.message && error.message.includes("Department name or code already exists")) {
+        return NextResponse.json(
+          { error: "Department name or code already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }

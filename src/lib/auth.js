@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { db } from "./database";
+import { pool } from "./postgres";
 
 // Hash password
 export async function hashPassword(password) {
@@ -15,7 +15,8 @@ export async function verifyPassword(password, hashedPassword) {
 // Admin authentication
 export async function authenticateAdmin(username, password) {
   try {
-    const admin = db.prepare("SELECT * FROM admin WHERE username = ?").get(username);
+    const result = await pool.query("SELECT * FROM admin WHERE username = $1", [username]);
+    const admin = result.rows[0];
 
     if (!admin) {
       return null;
@@ -40,16 +41,17 @@ export async function authenticateAdmin(username, password) {
 // Student authentication
 export async function authenticateStudent(rollNumber, regNumber) {
   try {
-    const student = db
-      .prepare(
-        `
-      SELECT s.*, d.name 
+    const result = await pool.query(
+      `
+      SELECT s.*, d.name as department_name 
       FROM students s 
       JOIN departments d ON s.department_id = d.id 
-      WHERE s.roll_number = ? AND s.registration_number = ?
-    `
-      )
-      .get(rollNumber, regNumber);
+      WHERE s.roll_number = $1 AND s.registration_number = $2
+    `,
+      [rollNumber, regNumber]
+    );
+
+    const student = result.rows[0];
 
     if (!student) {
       return null;
@@ -109,15 +111,16 @@ export async function clearSession() {
 // Initialize admin account if not exists
 export async function initializeAdmin() {
   try {
-    const adminExists = db.prepare("SELECT COUNT(*) FROM admin").get();
+    const result = await pool.query("SELECT COUNT(*) FROM admin");
+    const count = parseInt(result.rows[0].count);
 
-    if (adminExists.count === 0) {
+    if (count === 0) {
       const hashedPassword = await hashPassword("admin123"); // Default admin password
-      db.prepare("INSERT INTO admin (username, password_hash) VALUES (?, ?)").run(
+      await pool.query("INSERT INTO admin (username, password_hash) VALUES ($1, $2)", [
         "admin",
-        hashedPassword
-      );
-      console.log("Default admin account created=admin, password=admin123");
+        hashedPassword,
+      ]);
+      console.log("Default admin account created: username=admin, password=admin123");
     }
   } catch (error) {
     console.error("Initialize admin error:", error);
@@ -125,4 +128,6 @@ export async function initializeAdmin() {
 }
 
 // Call initialization
-initializeAdmin();
+if (process.env.DATABASE_URL) {
+  initializeAdmin();
+}

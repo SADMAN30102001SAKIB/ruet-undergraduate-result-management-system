@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const filterOptions = getStudentFilterOptions();
+    const filterOptions = await getStudentFilterOptions();
     return NextResponse.json(filterOptions);
   } catch (error) {
     console.error("Error fetching student filter options:", error);

@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid student ID" }, { status: 400 });
     }
 
-    const cgpaData = getStudentCGPA(studentId);
+    const cgpaData = await getStudentCGPA(studentId);
     return NextResponse.json(cgpaData);
   } catch (error) {
     console.error("Error fetching student CGPA:", error);

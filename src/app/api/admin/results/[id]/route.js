@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid result ID" }, { status: 400 });
     }
 
-    const result = getResultById(resultId);
+    const result = await getResultById(resultId);
     if (!result) {
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
@@ -47,7 +47,7 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const updates = body;
 
-    const updatedResult = updateResult(resultId, updates);
+    const updatedResult = await updateResult(resultId, updates);
     if (!updatedResult) {
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
@@ -74,7 +74,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Invalid result ID" }, { status: 400 });
     }
 
-    const success = deleteResult(resultId);
+    const success = await deleteResult(resultId);
     if (!success) {
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }

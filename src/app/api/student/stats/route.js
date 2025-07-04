@@ -1,7 +1,12 @@
 ﻿import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getStudentRegistrations, getStudentCGPA, getEffectiveStudentResults } from "@/lib/data";
-import { db } from "@/lib/database";
+import {
+  getStudentRegistrations,
+  getStudentCGPA,
+  getEffectiveStudentResults,
+  getStudentPublishedResultsCount,
+  getStudentTotalCredits,
+} from "@/lib/data";
 
 export async function GET() {
   try {
@@ -9,20 +14,16 @@ export async function GET() {
 
     if (!user || user.role !== "student") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    } // Get student registrations (all semesters for stats)
-    const registrations = getStudentRegistrations(user.id);
+    }
+
+    // Get student registrations (all semesters for stats)
+    const registrations = await getStudentRegistrations(user.id);
 
     // Get published results count
-    const publishedResults = db
-      .prepare(
-        `
-      SELECT COUNT(*) as count 
-      FROM results 
-      WHERE student_id = ? AND published = 1
-    `
-      )
-      .get(user.id); // Get CGPA data
-    const cgpaData = getStudentCGPA(user.id);
+    const publishedResultsCount = await getStudentPublishedResultsCount(user.id);
+
+    // Get CGPA data
+    const cgpaData = await getStudentCGPA(user.id);
 
     // Get current semester SGPA based on the latest semester with published results
     let currentSGPA = 0;
@@ -38,30 +39,21 @@ export async function GET() {
 
       currentSGPA = sortedSGPAs[0].sgpa; // Take the latest semester's SGPA
     } // Calculate total and completed credits using effective results
-    const totalCreditsQuery = db
-      .prepare(
-        `
-      SELECT SUM(c.credits) as total
-      FROM course_registrations cr
-      JOIN courses c ON cr.course_id = c.id
-      WHERE cr.student_id = ?
-    `
-      )
-      .get(user.id);
+    const totalCredits = await getStudentTotalCredits(user.id);
 
     // Get effective results (uses backlog if passed, otherwise regular)
-    const effectiveResults = getEffectiveStudentResults(user.id);
+    const effectiveResults = await getEffectiveStudentResults(user.id);
     const completedCredits = effectiveResults
       .filter((result) => result.marks >= 40)
       .reduce((sum, result) => sum + result.credits, 0);
 
     return NextResponse.json({
       totalRegistrations: registrations.length,
-      publishedResults: publishedResults.count,
+      publishedResults: publishedResultsCount,
       currentSGPA: currentSGPA,
       overallCGPA: cgpaData.cgpa,
       sgpas: cgpaData.sgpas,
-      totalCredits: totalCreditsQuery.total || 0,
+      totalCredits: totalCredits,
       completedCredits: completedCredits,
     });
   } catch (error) {

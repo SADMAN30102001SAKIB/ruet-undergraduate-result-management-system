@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const profile = getStudentById(user.id);
+    const profile = await getStudentById(user.id);
 
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });

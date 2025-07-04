@@ -29,7 +29,7 @@ export default function AdminDepartments() {
       });
       if (response.ok) {
         const data = await response.json();
-        setDepartments(data);
+        setDepartments(data.departments || []);
       } else {
         console.error("Failed to fetch departments:", response.status, response.statusText);
         showError("Error", "Failed to fetch departments");

@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid department ID" }, { status: 400 });
     }
 
-    const department = getDepartmentById(departmentId);
+    const department = await getDepartmentById(departmentId);
     if (!department) {
       return NextResponse.json({ error: "Department not found" }, { status: 404 });
     }
@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
     }
 
     try {
-      const department = updateDepartment(departmentId, {
+      const department = await updateDepartment(departmentId, {
         name: name.trim(),
         code: code.toUpperCase(),
       });
@@ -70,14 +70,11 @@ export async function PUT(request, { params }) {
 
       return NextResponse.json(department);
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
-        return NextResponse.json({ error: "Department code already exists" }, { status: 409 });
+      if (error.message && error.message.includes("already exists")) {
+        return NextResponse.json(
+          { error: "Department name or code already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }
@@ -102,7 +99,7 @@ export async function DELETE(request, { params }) {
     }
 
     try {
-      const success = deleteDepartment(departmentId);
+      const success = await deleteDepartment(departmentId);
 
       if (!success) {
         return NextResponse.json({ error: "Department not found" }, { status: 404 });
@@ -110,13 +107,7 @@ export async function DELETE(request, { params }) {
 
       return NextResponse.json({ message: "Department deleted successfully" });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("FOREIGN KEY constraint failed")
-      ) {
+      if (error.message && error.message.includes("Cannot delete department")) {
         return NextResponse.json(
           {
             error: "Cannot delete department with existing students or courses",

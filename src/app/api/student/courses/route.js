@@ -16,20 +16,20 @@ export async function GET() {
     }
 
     // Get student details
-    const student = getStudentById(user.id);
+    const student = await getStudentById(user.id);
     if (!student) {
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
     // Get available courses for the student
-    const availableCourses = getAvailableCoursesForStudent(
+    const availableCourses = await getAvailableCoursesForStudent(
       student.id,
       student.department_id,
       student.current_year,
       student.current_semester
     );
 
-    return NextResponse.json(availableCourses);
+    return NextResponse.json({ courses: availableCourses });
   } catch (error) {
     console.error("Get available courses error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -51,13 +51,13 @@ export async function POST(request) {
     }
 
     // Get student details to check current year/semester
-    const student = getStudentById(user.id);
+    const student = await getStudentById(user.id);
     if (!student) {
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
     // Get course details to validate year/semester
-    const course = getCourseById(parseInt(courseId));
+    const course = await getCourseById(parseInt(courseId));
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
@@ -73,19 +73,13 @@ export async function POST(request) {
     }
 
     try {
-      const registration = registerStudentForCourse(user.id, parseInt(courseId));
+      const registration = await registerStudentForCourse(user.id, parseInt(courseId));
       return NextResponse.json({
         message: "Successfully registered for course",
         registration,
       });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
+      if (error.message && error.message.includes("already registered")) {
         return NextResponse.json({ error: "Already registered for this course" }, { status: 409 });
       }
       throw error;

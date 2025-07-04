@@ -32,7 +32,7 @@ export default function AdminCourses() {
       const response = await fetch("/api/admin/courses");
       if (response.ok) {
         const data = await response.json();
-        setCourses(data);
+        setCourses(data.courses || []);
       } else if (response.status === 401) {
         router.push("/admin/login");
       }

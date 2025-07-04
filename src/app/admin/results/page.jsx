@@ -61,18 +61,18 @@ export default function AdminResults() {
       ]);
 
       if (studentsRes.ok) {
-        const studentsData = await studentsRes.json();
-        setStudents(studentsData);
+        const studentsResponse = await studentsRes.json();
+        setStudents(studentsResponse.students || []);
       }
 
       if (coursesRes.ok) {
-        const coursesData = await coursesRes.json();
-        setCourses(coursesData);
+        const coursesResponse = await coursesRes.json();
+        setCourses(coursesResponse.courses || []);
       }
 
       if (resultsRes.ok) {
-        const resultsData = await resultsRes.json();
-        setResults(resultsData);
+        const resultsResponse = await resultsRes.json();
+        setResults(resultsResponse.results || []);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

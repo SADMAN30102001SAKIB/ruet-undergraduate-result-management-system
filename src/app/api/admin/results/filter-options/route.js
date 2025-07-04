@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const filterOptions = getResultsFilterOptions();
+    const filterOptions = await getResultsFilterOptions();
     return NextResponse.json(filterOptions);
   } catch (error) {
     console.error("Error fetching results filter options:", error);

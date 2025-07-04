@@ -45,14 +45,14 @@ export default function StudentRegister() {
       const availableResponse = await fetch("/api/student/courses");
       if (availableResponse.ok) {
         const availableData = await availableResponse.json();
-        setAvailableCourses(availableData);
+        setAvailableCourses(availableData.courses || []);
       }
 
       // Fetch registered courses
       const registeredResponse = await fetch("/api/student/registrations");
       if (registeredResponse.ok) {
         const registeredData = await registeredResponse.json();
-        setRegisteredCourses(registeredData);
+        setRegisteredCourses(registeredData.courses || []);
       }
     } catch (error) {
       console.error("Failed to fetch courses:", error);
@@ -152,7 +152,7 @@ export default function StudentRegister() {
                     Registration Restricted to Current Semester
                   </h3>
                   <p className={styles.statusDescription}>
-                    You can only register/unregister for courses in your current semester:{" "}
+                    You can only register for courses in your current semester:{" "}
                     <span className={styles.semiBold}>
                       Year {profile.current_year},{" "}
                       {profile.current_semester.charAt(0).toUpperCase() +
@@ -321,7 +321,10 @@ export default function StudentRegister() {
             <ul className={styles.guidelinesList}>
               <li>You can only register for courses in your current year and semester</li>
               <li>Make sure to register for all required courses for your semester</li>
-              <li>You can unregister from courses before the registration deadline</li>
+              <li>
+                Once registered, you cannot unregister from courses. Contact administration if
+                needed.
+              </li>
               <li>Contact your academic advisor if you have questions about course selection</li>
               <li>Results will be published after course completion and evaluation</li>
             </ul>

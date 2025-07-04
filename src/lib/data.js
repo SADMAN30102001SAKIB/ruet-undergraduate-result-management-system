@@ -1,17 +1,18 @@
-import { db } from "./database";
+import { pool } from "./postgres";
 import { getGradeFromMarks, getBacklogGradeFromMarks, calculateSGPAWithBacklog } from "./utils";
 
 // Department operations
-export function getDepartments() {
+export async function getDepartments() {
   try {
-    return db.prepare("SELECT * FROM departments ORDER BY name").all();
+    const result = await pool.query("SELECT * FROM departments ORDER BY name");
+    return result.rows;
   } catch (error) {
     console.error("Error in getDepartments:", error);
     throw error;
   }
 }
 
-export function createDepartment(name, code) {
+export async function createDepartment(name, code) {
   try {
     // Validate required fields
     if (!name || !code) {
@@ -28,28 +29,32 @@ export function createDepartment(name, code) {
       throw new Error("Department name must be a string between 2 and 100 characters");
     }
 
-    const stmt = db.prepare("INSERT INTO departments (name, code) VALUES (?, ?)");
-    const result = stmt.run(name.trim(), code.trim().toUpperCase());
-    const department = db
-      .prepare("SELECT * FROM departments WHERE id = ?")
-      .get(result.lastInsertRowid);
-    return department;
+    const result = await pool.query(
+      "INSERT INTO departments (name, code) VALUES ($1, $2) RETURNING *",
+      [name.trim(), code.trim().toUpperCase()]
+    );
+    return result.rows[0];
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Department name or code already exists");
+    }
     console.error("Error in createDepartment:", error);
     throw error;
   }
 }
 
-export function getDepartmentById(id) {
+export async function getDepartmentById(id) {
   try {
-    return db.prepare("SELECT * FROM departments WHERE id = ?").get(id);
+    const result = await pool.query("SELECT * FROM departments WHERE id = $1", [id]);
+    return result.rows[0];
   } catch (error) {
     console.error("Error in getDepartmentById:", error);
     throw error;
   }
 }
 
-export function updateDepartment(id, updates) {
+export async function updateDepartment(id, updates) {
   try {
     // Allow valid field updates, exclude system fields and check for undefined/null
     const allowedFields = ["name", "code"];
@@ -57,43 +62,50 @@ export function updateDepartment(id, updates) {
       (key) => allowedFields.includes(key) && updates[key] !== undefined && updates[key] !== null
     );
     const values = fields.map((field) => updates[field]);
-    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
     if (fields.length === 0) {
-      return getDepartmentById(id);
+      return await getDepartmentById(id);
     }
 
-    const stmt = db.prepare(`UPDATE departments SET ${setClause} WHERE id = ?`);
-    const result = stmt.run(...values, id);
+    const result = await pool.query(
+      `UPDATE departments SET ${setClause} WHERE id = $${fields.length + 1}`,
+      [...values, id]
+    );
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return null;
     }
 
-    return getDepartmentById(id);
+    return await getDepartmentById(id);
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Department name or code already exists");
+    }
     console.error("Error in updateDepartment:", error);
     throw error;
   }
 }
 
-export function deleteDepartment(id) {
+export async function deleteDepartment(id) {
   try {
     // Check if department has students or courses
-    const studentsCount = db
-      .prepare("SELECT COUNT(*) as count FROM students WHERE department_id = ?")
-      .get(id);
-    const coursesCount = db
-      .prepare("SELECT COUNT(*) as count FROM courses WHERE department_id = ?")
-      .get(id);
+    const studentsCount = await pool.query(
+      "SELECT COUNT(*) as count FROM students WHERE department_id = $1",
+      [id]
+    );
+    const coursesCount = await pool.query(
+      "SELECT COUNT(*) as count FROM courses WHERE department_id = $1",
+      [id]
+    );
 
-    if (studentsCount.count > 0 || coursesCount.count > 0) {
+    if (parseInt(studentsCount.rows[0].count) > 0 || parseInt(coursesCount.rows[0].count) > 0) {
       throw new Error("Cannot delete department with existing students or courses");
     }
 
-    const stmt = db.prepare("DELETE FROM departments WHERE id = ?");
-    const result = stmt.run(id);
-    return result.changes > 0;
+    const result = await pool.query("DELETE FROM departments WHERE id = $1", [id]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error("Error in deleteDepartment:", error);
     throw error;
@@ -101,43 +113,40 @@ export function deleteDepartment(id) {
 }
 
 // Student operations
-export function getStudents() {
+export async function getStudents() {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(`
       SELECT s.*, d.name as department_name, d.code as department_code 
       FROM students s 
       JOIN departments d ON s.department_id = d.id 
       ORDER BY s.name
-    `
-      )
-      .all();
+    `);
+    return result.rows;
   } catch (error) {
     console.error("Error in getStudents:", error);
     throw error;
   }
 }
 
-export function getStudentById(id) {
+export async function getStudentById(id) {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT s.*, d.name as department_name, d.code as department_code 
       FROM students s 
       JOIN departments d ON s.department_id = d.id 
-      WHERE s.id = ?
-    `
-      )
-      .get(id);
+      WHERE s.id = $1
+    `,
+      [id]
+    );
+    return result.rows[0];
   } catch (error) {
     console.error("Error in getStudentById:", error);
     throw error;
   }
 }
 
-export function createStudent(student) {
+export async function createStudent(student) {
   try {
     // Validate required fields
     const requiredFields = [
@@ -180,30 +189,44 @@ export function createStudent(student) {
       throw new Error("Current semester must be either 'odd' or 'even'");
     }
 
-    const stmt = db.prepare(`
+    const result = await pool.query(
+      `
       INSERT INTO students 
       (name, parent_name, phone, roll_number, registration_number, department_id, academic_session, current_year, current_semester) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const result = stmt.run(
-      student.name,
-      student.parent_name,
-      student.phone,
-      student.roll_number,
-      student.registration_number,
-      student.department_id,
-      student.academic_session,
-      student.current_year,
-      student.current_semester
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id
+    `,
+      [
+        student.name,
+        student.parent_name,
+        student.phone,
+        student.roll_number,
+        student.registration_number,
+        student.department_id,
+        student.academic_session,
+        student.current_year,
+        student.current_semester,
+      ]
     );
-    return getStudentById(result.lastInsertRowid);
+
+    return await getStudentById(result.rows[0].id);
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation - check constraint details for specific field
+      if (error.detail && error.detail.includes("roll_number")) {
+        throw new Error("Roll number already exists");
+      }
+      if (error.detail && error.detail.includes("registration_number")) {
+        throw new Error("Registration number already exists");
+      }
+      throw new Error("Roll number or registration number already exists");
+    }
     console.error("Error in createStudent:", error);
     throw error;
   }
 }
 
-export function updateStudent(id, updates) {
+export async function updateStudent(id, updates) {
   try {
     // Define allowed fields for security
     const allowedFields = [
@@ -222,10 +245,10 @@ export function updateStudent(id, updates) {
       (key) => allowedFields.includes(key) && updates[key] !== undefined && updates[key] !== null
     );
     const values = fields.map((field) => updates[field]);
-    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
     if (fields.length === 0) {
-      return getStudentById(id);
+      return await getStudentById(id);
     }
 
     // Validate updated fields that have format requirements
@@ -249,51 +272,71 @@ export function updateStudent(id, updates) {
       throw new Error("Current semester must be either 'odd' or 'even'");
     }
 
-    const stmt = db.prepare(`UPDATE students SET ${setClause} WHERE id = ?`);
-    const result = stmt.run(...values, id);
+    const result = await pool.query(
+      `UPDATE students SET ${setClause} WHERE id = $${fields.length + 1}`,
+      [...values, id]
+    );
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return null; // Student not found
     }
 
-    return getStudentById(id);
+    return await getStudentById(id);
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation - check constraint details for specific field
+      if (error.detail && error.detail.includes("roll_number")) {
+        throw new Error("Roll number already exists");
+      }
+      if (error.detail && error.detail.includes("registration_number")) {
+        throw new Error("Registration number already exists");
+      }
+      throw new Error("Roll number or registration number already exists");
+    }
     console.error("Error in updateStudent:", error);
     throw error;
   }
 }
 
-export function deleteStudent(id) {
+export async function deleteStudent(id) {
   try {
     // Check if student exists
-    const student = db.prepare("SELECT id FROM students WHERE id = ?").get(id);
-    if (!student) {
+    const student = await pool.query("SELECT id FROM students WHERE id = $1", [id]);
+    if (student.rows.length === 0) {
       return { success: false, error: "Student not found" };
     }
 
     // Check if student has any results
-    const hasResults = db
-      .prepare("SELECT COUNT(*) as count FROM results WHERE student_id = ?")
-      .get(id);
+    const hasResults = await pool.query(
+      "SELECT COUNT(*) as count FROM results WHERE student_id = $1",
+      [id]
+    );
 
-    if (hasResults.count > 0) {
+    if (parseInt(hasResults.rows[0].count) > 0) {
       return { success: false, error: "Cannot delete student with existing results" };
     }
 
-    // Use transaction to ensure data consistency
-    const transaction = db.transaction(() => {
+    // Use PostgreSQL transaction for data consistency
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
       // Delete related records first
-      db.prepare("DELETE FROM results WHERE student_id = ?").run(id);
-      db.prepare("DELETE FROM course_registrations WHERE student_id = ?").run(id);
-      db.prepare("DELETE FROM semester_progress WHERE student_id = ?").run(id);
+      await client.query("DELETE FROM results WHERE student_id = $1", [id]);
+      await client.query("DELETE FROM student_courses WHERE student_id = $1", [id]);
+      await client.query("DELETE FROM semester_progress WHERE student_id = $1", [id]);
 
       // Delete the student
-      const result = db.prepare("DELETE FROM students WHERE id = ?").run(id);
-      return result.changes > 0;
-    });
+      const result = await client.query("DELETE FROM students WHERE id = $1", [id]);
 
-    const deleted = transaction();
-    return { success: deleted };
+      await client.query("COMMIT");
+      return { success: result.rowCount > 0 };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   } catch (error) {
     console.error("Error in deleteStudent:", error);
     throw error;
@@ -301,44 +344,41 @@ export function deleteStudent(id) {
 }
 
 // Course operations
-export function getCourses() {
+export async function getCourses() {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(`
       SELECT c.*, d.name as department_name, d.code as department_code 
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
       ORDER BY d.name, c.year, c.semester, c.course_code
-    `
-      )
-      .all();
+    `);
+    return result.rows;
   } catch (error) {
     console.error("Error in getCourses:", error);
     throw error;
   }
 }
 
-export function getCoursesByDepartment(departmentId) {
+export async function getCoursesByDepartment(departmentId) {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT c.*, d.name as department_name, d.code as department_code 
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
-      WHERE c.department_id = ?
+      WHERE c.department_id = $1
       ORDER BY c.year, c.semester, c.course_code
-    `
-      )
-      .all(departmentId);
+    `,
+      [departmentId]
+    );
+    return result.rows;
   } catch (error) {
     console.error("Error in getCoursesByDepartment:", error);
     throw error;
   }
 }
 
-export function createCourse(course) {
+export async function createCourse(course) {
   try {
     // Validate required fields
     const requiredFields = [
@@ -380,79 +420,88 @@ export function createCourse(course) {
       throw new Error("CGPA weight must be between 0 and 4");
     }
 
-    const stmt = db.prepare(`
+    const result = await pool.query(
+      `
       INSERT INTO courses 
       (course_code, course_name, department_id, year, semester, cgpa_weight, credits) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    const result = stmt.run(
-      course.course_code,
-      course.course_name,
-      course.department_id,
-      course.year,
-      course.semester,
-      course.cgpa_weight,
-      course.credits
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id
+    `,
+      [
+        course.course_code,
+        course.course_name,
+        course.department_id,
+        course.year,
+        course.semester,
+        course.cgpa_weight,
+        course.credits,
+      ]
     );
-    return db
-      .prepare(
-        `
+
+    const courseResult = await pool.query(
+      `
       SELECT c.*, d.name as department_name 
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
-      WHERE c.id = ?
-    `
-      )
-      .get(result.lastInsertRowid);
+      WHERE c.id = $1
+    `,
+      [result.rows[0].id]
+    );
+
+    return courseResult.rows[0];
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Course code already exists in this department");
+    }
     console.error("Error in createCourse:", error);
     throw error;
   }
 }
 
-export function deleteCourse(courseId) {
+export async function deleteCourse(courseId) {
   try {
     // Check if there are any registrations or results for this course
-    const registrations = db
-      .prepare("SELECT COUNT(*) as count FROM course_registrations WHERE course_id = ?")
-      .get(courseId);
+    const registrations = await pool.query(
+      "SELECT COUNT(*) as count FROM student_courses WHERE course_id = $1",
+      [courseId]
+    );
 
-    const results = db
-      .prepare("SELECT COUNT(*) as count FROM results WHERE course_id = ?")
-      .get(courseId);
+    const results = await pool.query("SELECT COUNT(*) as count FROM results WHERE course_id = $1", [
+      courseId,
+    ]);
 
-    if (registrations.count > 0 || results.count > 0) {
+    if (parseInt(registrations.rows[0].count) > 0 || parseInt(results.rows[0].count) > 0) {
       return false; // Cannot delete course with existing data
     }
 
-    const stmt = db.prepare("DELETE FROM courses WHERE id = ?");
-    const result = stmt.run(courseId);
-    return result.changes > 0;
+    const result = await pool.query("DELETE FROM courses WHERE id = $1", [courseId]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error("Error deleting course:", error);
     return false;
   }
 }
 
-export function getCourseById(courseId) {
+export async function getCourseById(courseId) {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT c.*, d.name as department_name 
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
-      WHERE c.id = ?
-    `
-      )
-      .get(courseId);
+      WHERE c.id = $1
+    `,
+      [courseId]
+    );
+    return result.rows[0];
   } catch (error) {
     console.error("Error fetching course:", error);
     return null;
   }
 }
 
-export function updateCourse(courseId, updates) {
+export async function updateCourse(courseId, updates) {
   try {
     // Define allowed fields for security
     const allowedFields = [
@@ -469,10 +518,10 @@ export function updateCourse(courseId, updates) {
       (key) => allowedFields.includes(key) && updates[key] !== undefined && updates[key] !== null
     );
     const values = fields.map((field) => updates[field]);
-    const setClause = fields.map((field) => `${field} = ?`).join(", ");
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(", ");
 
     if (fields.length === 0) {
-      return getCourseById(courseId);
+      return await getCourseById(courseId);
     }
 
     // Validate updated fields that have specific requirements
@@ -500,76 +549,83 @@ export function updateCourse(courseId, updates) {
       throw new Error("CGPA weight must be between 0 and 4");
     }
 
-    const stmt = db.prepare(`UPDATE courses SET ${setClause} WHERE id = ?`);
-    const result = stmt.run(...values, courseId);
+    const result = await pool.query(
+      `UPDATE courses SET ${setClause} WHERE id = $${fields.length + 1}`,
+      [...values, courseId]
+    );
 
-    if (result.changes === 0) {
+    if (result.rowCount === 0) {
       return null;
     }
 
-    return getCourseById(courseId);
+    return await getCourseById(courseId);
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Course code already exists in this department");
+    }
     console.error("Error updating course:", error);
     throw error;
   }
 }
 
 // Course registration operations
-export function getStudentRegistrations(studentId, currentYear, currentSemester) {
+export async function getStudentRegistrations(studentId, currentYear, currentSemester) {
   try {
     let query = `
       SELECT cr.*, c.course_code, c.course_name, c.year, c.semester, c.credits, c.cgpa_weight
-      FROM course_registrations cr
+      FROM student_courses cr
       JOIN courses c ON cr.course_id = c.id
-      WHERE cr.student_id = ?`;
+      WHERE cr.student_id = $1`;
 
     const params = [studentId];
 
     // If current year and semester are provided, filter by them
     if (currentYear !== undefined && currentSemester !== undefined) {
-      query += ` AND c.year = ? AND c.semester = ?`;
+      query += ` AND c.year = $2 AND c.semester = $3`;
       params.push(currentYear, currentSemester);
     }
 
     query += ` ORDER BY c.year, c.semester, c.course_code`;
 
-    return db.prepare(query).all(...params);
+    const result = await pool.query(query, params);
+    return result.rows;
   } catch (error) {
     console.error("Error in getStudentRegistrations:", error);
     throw error;
   }
 }
 
-export function getAvailableCoursesForStudent(
+export async function getAvailableCoursesForStudent(
   studentId,
   departmentId,
   currentYear,
   currentSemester
 ) {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT c.*, d.name as department_name 
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
-      WHERE c.department_id = ? 
-        AND c.year = ?
-        AND c.semester = ?
+      WHERE c.department_id = $1 
+        AND c.year = $2
+        AND c.semester = $3
         AND c.id NOT IN (
-          SELECT course_id FROM course_registrations WHERE student_id = ?
+          SELECT course_id FROM student_courses WHERE student_id = $4
         )
       ORDER BY c.course_code
-    `
-      )
-      .all(departmentId, currentYear, currentSemester, studentId);
+    `,
+      [departmentId, currentYear, currentSemester, studentId]
+    );
+    return result.rows;
   } catch (error) {
     console.error("Error in getAvailableCoursesForStudent:", error);
     throw error;
   }
 }
 
-export function registerStudentForCourse(studentId, courseId) {
+export async function registerStudentForCourse(studentId, courseId) {
   try {
     // Validate inputs
     if (!studentId || !courseId || isNaN(parseInt(studentId)) || isNaN(parseInt(courseId))) {
@@ -577,17 +633,17 @@ export function registerStudentForCourse(studentId, courseId) {
     }
 
     // Check if already registered
-    if (isStudentRegisteredForCourse(studentId, courseId)) {
+    if (await isStudentRegisteredForCourse(studentId, courseId)) {
       throw new Error("Student is already registered for this course");
     }
 
     // Check if student and course exist
-    const student = getStudentById(studentId);
+    const student = await getStudentById(studentId);
     if (!student) {
       throw new Error("Student not found");
     }
 
-    const course = getCourseById(courseId);
+    const course = await getCourseById(courseId);
     if (!course) {
       throw new Error("Course not found");
     }
@@ -605,44 +661,47 @@ export function registerStudentForCourse(studentId, courseId) {
       throw new Error("Course semester does not match student's current semester");
     }
 
-    const stmt = db.prepare(
-      "INSERT INTO course_registrations (student_id, course_id) VALUES (?, ?)"
+    const result = await pool.query(
+      "INSERT INTO student_courses (student_id, course_id) VALUES ($1, $2) RETURNING *",
+      [studentId, courseId]
     );
-    const result = stmt.run(studentId, courseId);
-    return db
-      .prepare("SELECT * FROM course_registrations WHERE id = ?")
-      .get(result.lastInsertRowid);
+    return result.rows[0];
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Student is already registered for this course");
+    }
     console.error("Error in registerStudentForCourse:", error);
     throw error;
   }
 }
 
-export function unregisterStudentFromCourse(studentId, courseId) {
+export async function unregisterStudentFromCourse(studentId, courseId) {
   try {
     // Validate inputs
     if (!studentId || !courseId || isNaN(parseInt(studentId)) || isNaN(parseInt(courseId))) {
       throw new Error("Valid student ID and course ID are required");
     }
 
-    const stmt = db.prepare(
-      "DELETE FROM course_registrations WHERE student_id = ? AND course_id = ?"
+    const result = await pool.query(
+      "DELETE FROM student_courses WHERE student_id = $1 AND course_id = $2",
+      [studentId, courseId]
     );
-    const result = stmt.run(studentId, courseId);
 
-    return result.changes > 0;
+    return result.rowCount > 0;
   } catch (error) {
     console.error("Error in unregisterStudentFromCourse:", error);
     throw error;
   }
 }
 
-export function isStudentRegisteredForCourse(studentId, courseId) {
+export async function isStudentRegisteredForCourse(studentId, courseId) {
   try {
-    const registration = db
-      .prepare("SELECT id FROM course_registrations WHERE student_id = ? AND course_id = ?")
-      .get(studentId, courseId);
-    return !!registration;
+    const result = await pool.query(
+      "SELECT id FROM student_courses WHERE student_id = $1 AND course_id = $2",
+      [studentId, courseId]
+    );
+    return result.rows.length > 0;
   } catch (error) {
     console.error("Error in isStudentRegisteredForCourse:", error);
     throw error;
@@ -650,19 +709,19 @@ export function isStudentRegisteredForCourse(studentId, courseId) {
 }
 
 // Result operations
-export function getStudentResults(studentId) {
+export async function getStudentResults(studentId) {
   try {
-    return db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT r.*, c.course_code, c.course_name, c.year, c.semester, c.credits, c.cgpa_weight
       FROM results r
       JOIN courses c ON r.course_id = c.id
-      WHERE r.student_id = ? AND r.published = 1
+      WHERE r.student_id = $1 AND r.published = true
       ORDER BY c.year, c.semester, c.course_code
-    `
-      )
-      .all(studentId);
+    `,
+      [studentId]
+    );
+    return result.rows;
   } catch (error) {
     console.error("Error in getStudentResults:", error);
     throw error;
@@ -670,20 +729,20 @@ export function getStudentResults(studentId) {
 }
 
 // Get student results separated into regular and backlog
-export function getStudentResultsWithBacklog(studentId) {
+export async function getStudentResultsWithBacklog(studentId) {
   try {
-    const allResults = db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT r.*, c.course_code, c.course_name, c.year, c.semester, c.credits, c.cgpa_weight
       FROM results r
       JOIN courses c ON r.course_id = c.id
-      WHERE r.student_id = ? AND r.published = 1
+      WHERE r.student_id = $1 AND r.published = true
       ORDER BY r.is_backlog ASC, c.year, c.semester, c.course_code
-    `
-      )
-      .all(studentId);
+    `,
+      [studentId]
+    );
 
+    const allResults = result.rows;
     const regularResults = allResults.filter((r) => !r.is_backlog);
     const backlogResults = allResults.filter((r) => r.is_backlog);
 
@@ -695,9 +754,9 @@ export function getStudentResultsWithBacklog(studentId) {
 }
 
 // Get effective results for CGPA calculation (backlog results override failed originals)
-export function getEffectiveStudentResults(studentId) {
+export async function getEffectiveStudentResults(studentId) {
   try {
-    const { regularResults, backlogResults } = getStudentResultsWithBacklog(studentId);
+    const { regularResults, backlogResults } = await getStudentResultsWithBacklog(studentId);
 
     // Create a map of course_id to best result
     const effectiveResults = new Map();
@@ -726,22 +785,18 @@ export function getEffectiveStudentResults(studentId) {
   }
 }
 
-export function getResults() {
+export async function getResults() {
   try {
-    const results = db
-      .prepare(
-        `
+    const result = await pool.query(`
       SELECT r.*, s.name as student_name, c.course_code, c.course_name
       FROM results r
       JOIN students s ON r.student_id = s.id
       JOIN courses c ON r.course_id = c.id
       ORDER BY r.created_at DESC
-    `
-      )
-      .all();
+    `);
 
     // Process each result to apply appropriate grading
-    return results.map((result) => {
+    return result.rows.map((result) => {
       const gradeInfo = result.is_backlog
         ? getBacklogGradeFromMarks(result.marks)
         : getGradeFromMarks(result.marks);
@@ -758,10 +813,10 @@ export function getResults() {
 }
 
 // Check if a backlog result can be added for a student-course combination
-export function canAddBacklogResult(studentId, courseId) {
+export async function canAddBacklogResult(studentId, courseId) {
   try {
     // First check if student is registered for this course
-    const isRegistered = isStudentRegisteredForCourse(studentId, courseId);
+    const isRegistered = await isStudentRegisteredForCourse(studentId, courseId);
     if (!isRegistered) {
       return {
         canAdd: false,
@@ -770,16 +825,17 @@ export function canAddBacklogResult(studentId, courseId) {
     }
 
     // Check if there's an existing result for this student-course combination
-    const existingResult = db
-      .prepare(
-        `
-        SELECT * FROM results 
-        WHERE student_id = ? AND course_id = ?
-        ORDER BY created_at DESC
-        LIMIT 1
-        `
-      )
-      .get(studentId, courseId);
+    const result = await pool.query(
+      `
+      SELECT * FROM results 
+      WHERE student_id = $1 AND course_id = $2
+      ORDER BY created_at DESC
+      LIMIT 1
+    `,
+      [studentId, courseId]
+    );
+
+    const existingResult = result.rows[0];
 
     if (!existingResult) {
       // No existing result, can add normally
@@ -806,7 +862,7 @@ export function canAddBacklogResult(studentId, courseId) {
   }
 }
 
-export function createResult(result) {
+export async function createResult(result) {
   try {
     // Validate input
     if (!result.student_id || !result.course_id || result.marks === undefined) {
@@ -818,10 +874,13 @@ export function createResult(result) {
       throw new Error("Marks must be between 0 and 100");
     }
 
-    // Use database transaction to prevent race conditions
-    const transaction = db.transaction(() => {
+    // Use PostgreSQL transaction to prevent race conditions
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
       // Check if this is a valid backlog addition
-      const backlogCheck = canAddBacklogResult(result.student_id, result.course_id);
+      const backlogCheck = await canAddBacklogResult(result.student_id, result.course_id);
 
       if (!backlogCheck.canAdd) {
         throw new Error(backlogCheck.reason || "Cannot add duplicate result");
@@ -830,49 +889,54 @@ export function createResult(result) {
       // If there's an existing failed result, this will be a backlog entry
       const isBacklog = !!backlogCheck.existingResult;
 
-      const stmt = db.prepare(`
+      const insertResult = await client.query(
+        `
         INSERT INTO results (student_id, course_id, marks, published, is_backlog) 
-        VALUES (?, ?, ?, ?, ?)
-      `);
-      const insertResult = stmt.run(
-        result.student_id,
-        result.course_id,
-        result.marks,
-        result.published ? 1 : 0,
-        isBacklog ? 1 : 0
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+      `,
+        [result.student_id, result.course_id, result.marks, result.published || false, isBacklog]
       );
 
-      return db.prepare("SELECT * FROM results WHERE id = ?").get(insertResult.lastInsertRowid);
-    });
-
-    return transaction();
+      await client.query("COMMIT");
+      return insertResult.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Result already exists for this student-course combination");
+    }
     console.error("Error in createResult:", error);
     throw error;
   }
 }
 
-export function getResultById(id) {
+export async function getResultById(id) {
   try {
-    const result = db
-      .prepare(
-        `
+    const result = await pool.query(
+      `
       SELECT r.*, s.name as student_name, c.course_code, c.course_name
       FROM results r
       JOIN students s ON r.student_id = s.id
       JOIN courses c ON r.course_id = c.id
-      WHERE r.id = ?
-    `
-      )
-      .get(id);
+      WHERE r.id = $1
+    `,
+      [id]
+    );
 
-    if (result) {
+    if (result.rows.length > 0) {
+      const resultData = result.rows[0];
       // Use appropriate grading function based on backlog status
-      const gradeInfo = result.is_backlog
-        ? getBacklogGradeFromMarks(result.marks)
-        : getGradeFromMarks(result.marks);
+      const gradeInfo = resultData.is_backlog
+        ? getBacklogGradeFromMarks(resultData.marks)
+        : getGradeFromMarks(resultData.marks);
       return {
-        ...result,
+        ...resultData,
         grade: gradeInfo.grade,
         gradePoint: gradeInfo.gradePoint,
       };
@@ -885,18 +949,19 @@ export function getResultById(id) {
   }
 }
 
-export function updateResult(id, updates) {
+export async function updateResult(id, updates) {
   try {
     // Build dynamic update query with validation
     const fields = [];
     const values = [];
+    let paramCount = 1;
 
     if (updates.student_id !== undefined) {
-      fields.push("student_id = ?");
+      fields.push(`student_id = $${paramCount++}`);
       values.push(updates.student_id);
     }
     if (updates.course_id !== undefined) {
-      fields.push("course_id = ?");
+      fields.push(`course_id = $${paramCount++}`);
       values.push(updates.course_id);
     }
     if (updates.marks !== undefined) {
@@ -904,37 +969,44 @@ export function updateResult(id, updates) {
       if (updates.marks < 0 || updates.marks > 100) {
         throw new Error("Marks must be between 0 and 100");
       }
-      fields.push("marks = ?");
+      fields.push(`marks = $${paramCount++}`);
       values.push(updates.marks);
     }
     if (updates.published !== undefined) {
-      fields.push("published = ?");
-      values.push(updates.published ? 1 : 0);
+      fields.push(`published = $${paramCount++}`);
+      values.push(updates.published);
     }
 
     if (fields.length === 0) {
-      return getResultById(id) || null;
+      return (await getResultById(id)) || null;
     }
 
-    const stmt = db.prepare(`UPDATE results SET ${fields.join(", ")} WHERE id = ?`);
-    const result = stmt.run(...values, id);
+    values.push(id); // Add ID as the last parameter
 
-    if (result.changes === 0) {
+    const result = await pool.query(
+      `UPDATE results SET ${fields.join(", ")} WHERE id = $${paramCount}`,
+      values
+    );
+
+    if (result.rowCount === 0) {
       return null;
     }
 
-    return getResultById(id) || null;
+    return (await getResultById(id)) || null;
   } catch (error) {
+    if (error.code === "23505") {
+      // PostgreSQL unique violation
+      throw new Error("Result already exists for this student-course combination");
+    }
     console.error("Error in updateResult:", error);
     throw error;
   }
 }
 
-export function deleteResult(id) {
+export async function deleteResult(id) {
   try {
-    const stmt = db.prepare("DELETE FROM results WHERE id = ?");
-    const result = stmt.run(id);
-    return result.changes > 0;
+    const result = await pool.query("DELETE FROM results WHERE id = $1", [id]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error("Error in deleteResult:", error);
     throw error;
@@ -942,9 +1014,9 @@ export function deleteResult(id) {
 }
 
 // Calculate and get student CGPA
-export function getStudentCGPA(studentId) {
+export async function getStudentCGPA(studentId) {
   try {
-    const { regularResults, backlogResults } = getStudentResultsWithBacklog(studentId);
+    const { regularResults, backlogResults } = await getStudentResultsWithBacklog(studentId);
 
     // Create a map to track the best result for each course, preserving backlog status
     const effectiveResults = new Map();
@@ -1003,7 +1075,7 @@ export function getStudentCGPA(studentId) {
 }
 
 // New function to get registered courses for a specific student with all results
-export function getRegisteredCoursesForStudent(studentId, filters = {}) {
+export async function getRegisteredCoursesForStudent(studentId, filters = {}) {
   try {
     let query = `
       SELECT c.*, d.name as department_name, d.code as department_code,
@@ -1011,38 +1083,40 @@ export function getRegisteredCoursesForStudent(studentId, filters = {}) {
              CASE WHEN r.id IS NULL THEN 0 ELSE 1 END as has_result
       FROM courses c 
       JOIN departments d ON c.department_id = d.id 
-      JOIN course_registrations cr ON c.id = cr.course_id
-      LEFT JOIN results r ON c.id = r.course_id AND r.student_id = ?
+      JOIN student_courses cr ON c.id = cr.course_id
+      LEFT JOIN results r ON c.id = r.course_id AND r.student_id = $1
         AND r.id = (
           SELECT r2.id FROM results r2 
-          WHERE r2.course_id = c.id AND r2.student_id = ?
+          WHERE r2.course_id = c.id AND r2.student_id = $1
           ORDER BY r2.marks DESC, r2.created_at DESC 
           LIMIT 1
         )
-      WHERE cr.student_id = ?
+      WHERE cr.student_id = $1
     `;
 
-    const params = [studentId, studentId, studentId];
+    const params = [studentId];
+    let paramCount = 2;
 
     // Apply filters if provided
     if (filters.departmentId) {
-      query += ` AND c.department_id = ?`;
+      query += ` AND c.department_id = $${paramCount++}`;
       params.push(parseInt(filters.departmentId));
     }
 
     if (filters.year) {
-      query += ` AND c.year = ?`;
+      query += ` AND c.year = $${paramCount++}`;
       params.push(parseInt(filters.year));
     }
 
     if (filters.semester) {
-      query += ` AND c.semester = ?`;
+      query += ` AND c.semester = $${paramCount++}`;
       params.push(filters.semester);
     }
 
     query += ` ORDER BY c.year, c.semester, c.course_code`;
 
-    return db.prepare(query).all(...params);
+    const result = await pool.query(query, params);
+    return result.rows;
   } catch (error) {
     console.error("Error in getRegisteredCoursesForStudent:", error);
     throw error;
@@ -1050,14 +1124,14 @@ export function getRegisteredCoursesForStudent(studentId, filters = {}) {
 }
 
 // Functions to get all possible filter values for admin pages
-export function getAllYears() {
+export async function getAllYears() {
   try {
-    // Get years from both students and courses tables, plus standard academic years
-    const studentYears = db
-      .prepare("SELECT DISTINCT current_year FROM students ORDER BY current_year")
-      .all();
+    // Get years from both students and courses, plus standard academic years
+    const studentYears = await pool.query(
+      "SELECT DISTINCT current_year FROM students ORDER BY current_year"
+    );
 
-    const courseYears = db.prepare("SELECT DISTINCT year FROM courses ORDER BY year").all();
+    const courseYears = await pool.query("SELECT DISTINCT year FROM courses ORDER BY year");
 
     // Combine all years and add standard academic years (1-4)
     const allYears = new Set();
@@ -1066,10 +1140,10 @@ export function getAllYears() {
     [1, 2, 3, 4].forEach((year) => allYears.add(year));
 
     // Add years from students
-    studentYears.forEach((s) => allYears.add(s.current_year));
+    studentYears.rows.forEach((s) => allYears.add(s.current_year));
 
     // Add years from courses
-    courseYears.forEach((c) => allYears.add(c.year));
+    courseYears.rows.forEach((c) => allYears.add(c.year));
 
     return Array.from(allYears).sort();
   } catch (error) {
@@ -1078,141 +1152,210 @@ export function getAllYears() {
   }
 }
 
-export function getAllSemesters() {
-  // Get semesters from both students and courses tables, plus standard semesters
-  const studentSemesters = db
-    .prepare("SELECT DISTINCT current_semester FROM students ORDER BY current_semester")
-    .all();
+export async function getAllSemesters() {
+  try {
+    // Get semesters from both students and courses tables, plus standard semesters
+    const studentSemesters = await pool.query(
+      "SELECT DISTINCT current_semester FROM students ORDER BY current_semester"
+    );
 
-  const courseSemesters = db
-    .prepare("SELECT DISTINCT semester FROM courses ORDER BY semester")
-    .all();
+    const courseSemesters = await pool.query(
+      "SELECT DISTINCT semester FROM courses ORDER BY semester"
+    );
 
-  // Combine all semesters and add standard semesters (only even/odd)
-  const allSemesters = new Set();
+    // Combine all semesters and add standard semesters - only even/odd
+    const allSemesters = new Set();
 
-  // Add standard semesters - only even and odd
-  ["even", "odd"].forEach((semester) => allSemesters.add(semester));
+    ["even", "odd"].forEach((semester) => allSemesters.add(semester));
 
-  // Add semesters from students
-  studentSemesters.forEach((s) => allSemesters.add(s.current_semester));
+    // Add semesters from students
+    studentSemesters.rows.forEach((s) => allSemesters.add(s.current_semester));
 
-  // Add semesters from courses
-  courseSemesters.forEach((c) => allSemesters.add(c.semester));
+    // Add semesters from courses
+    courseSemesters.rows.forEach((c) => allSemesters.add(c.semester));
 
-  // Filter out null/undefined and sort
-  return Array.from(allSemesters).filter(Boolean).sort();
+    // Filter out null/undefined and sort
+    return Array.from(allSemesters).filter(Boolean).sort();
+  } catch (error) {
+    console.error("Error in getAllSemesters:", error);
+    throw error;
+  }
 }
 
-export function getAllAcademicSessions() {
-  const sessions = db
-    .prepare("SELECT DISTINCT academic_session FROM students ORDER BY academic_session")
-    .all();
-  return sessions.map((s) => s.academic_session);
+export async function getAllAcademicSessions() {
+  try {
+    const result = await pool.query(
+      "SELECT DISTINCT academic_session FROM students ORDER BY academic_session"
+    );
+    return result.rows.map((s) => s.academic_session);
+  } catch (error) {
+    console.error("Error in getAllAcademicSessions:", error);
+    throw error;
+  }
 }
 
 // Get all department codes for filter dropdowns
-export function getAllDepartmentCodes() {
-  const departments = db.prepare("SELECT DISTINCT code FROM departments ORDER BY code").all();
-  return departments.map((d) => d.code);
+export async function getAllDepartmentCodes() {
+  try {
+    const result = await pool.query("SELECT DISTINCT code FROM departments ORDER BY code");
+    return result.rows.map((d) => d.code);
+  } catch (error) {
+    console.error("Error in getAllDepartmentCodes:", error);
+    throw error;
+  }
 }
 
 // Get all filter options for students page
-export function getStudentFilterOptions() {
-  return {
-    departments: getAllDepartmentCodes(),
-    years: getAllYears(),
-    semesters: getAllSemesters(),
-    academicSessions: getAllAcademicSessions(),
-  };
+export async function getStudentFilterOptions() {
+  try {
+    return {
+      departments: await getAllDepartmentCodes(),
+      years: await getAllYears(),
+      semesters: await getAllSemesters(),
+      academicSessions: await getAllAcademicSessions(),
+    };
+  } catch (error) {
+    console.error("Error in getStudentFilterOptions:", error);
+    throw error;
+  }
 }
 
 // Get all course years and semesters for results page filtering
-export function getAllCourseYears() {
-  const courseYears = db.prepare("SELECT DISTINCT year FROM courses ORDER BY year").all();
+export async function getAllCourseYears() {
+  try {
+    const result = await pool.query("SELECT DISTINCT year FROM courses ORDER BY year");
 
-  // Combine with standard academic years to ensure completeness
-  const allYears = new Set();
-  [1, 2, 3, 4].forEach((year) => allYears.add(year));
-  courseYears.forEach((c) => allYears.add(c.year));
+    // Combine with standard academic years to ensure completeness
+    const allYears = new Set();
+    [1, 2, 3, 4].forEach((year) => allYears.add(year));
+    result.rows.forEach((c) => allYears.add(c.year));
 
-  return Array.from(allYears).sort();
+    return Array.from(allYears).sort();
+  } catch (error) {
+    console.error("Error in getAllCourseYears:", error);
+    throw error;
+  }
 }
 
-export function getAllCourseSemesters() {
-  const courseSemesters = db
-    .prepare("SELECT DISTINCT semester FROM courses ORDER BY semester")
-    .all();
+export async function getAllCourseSemesters() {
+  try {
+    const result = await pool.query("SELECT DISTINCT semester FROM courses ORDER BY semester");
 
-  // Combine with standard semesters to ensure completeness (only even/odd)
-  const allSemesters = new Set();
-  ["even", "odd"].forEach((semester) => allSemesters.add(semester));
-  courseSemesters.forEach((c) => allSemesters.add(c.semester));
+    // Combine with standard semesters to ensure completeness (only even/odd)
+    const allSemesters = new Set();
+    ["even", "odd"].forEach((semester) => allSemesters.add(semester));
+    result.rows.forEach((c) => allSemesters.add(c.semester));
 
-  return Array.from(allSemesters).filter(Boolean).sort();
+    return Array.from(allSemesters).filter(Boolean).sort();
+  } catch (error) {
+    console.error("Error in getAllCourseSemesters:", error);
+    throw error;
+  }
 }
 
 // Get all filter options for results page
-export function getResultsFilterOptions() {
-  return {
-    departments: getAllDepartmentCodes(),
-    years: getAllCourseYears(),
-    semesters: getAllCourseSemesters(),
-  };
+export async function getResultsFilterOptions() {
+  try {
+    return {
+      departments: await getAllDepartmentCodes(),
+      years: await getAllCourseYears(),
+      semesters: await getAllCourseSemesters(),
+    };
+  } catch (error) {
+    console.error("Error in getResultsFilterOptions:", error);
+    throw error;
+  }
 }
 
 // Get student count for a specific course
-export function getCourseStudentCount(courseId) {
-  const result = db
-    .prepare("SELECT COUNT(*) as count FROM course_registrations WHERE course_id = ?")
-    .get(courseId);
-  return result?.count || 0;
+export async function getCourseStudentCount(courseId) {
+  try {
+    const result = await pool.query(
+      "SELECT COUNT(*) as count FROM student_courses WHERE course_id = $1",
+      [courseId]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  } catch (error) {
+    console.error("Error in getCourseStudentCount:", error);
+    throw error;
+  }
 }
 
 // Get all courses with student counts
-export function getCoursesWithStudentCounts() {
-  const courses = getCourses();
-  return courses.map((course) => ({
-    ...course,
-    student_count: getCourseStudentCount(course.id),
-  }));
+export async function getCoursesWithStudentCounts() {
+  try {
+    const courses = await getCourses();
+    const coursesWithCounts = await Promise.all(
+      courses.map(async (course) => ({
+        ...course,
+        student_count: await getCourseStudentCount(course.id),
+      }))
+    );
+    return coursesWithCounts;
+  } catch (error) {
+    console.error("Error in getCoursesWithStudentCounts:", error);
+    throw error;
+  }
 }
 
 // Get course count for a specific department
-export function getDepartmentCourseCount(departmentId) {
-  const result = db
-    .prepare("SELECT COUNT(*) as count FROM courses WHERE department_id = ?")
-    .get(departmentId);
-  return result?.count || 0;
+export async function getDepartmentCourseCount(departmentId) {
+  try {
+    const result = await pool.query(
+      "SELECT COUNT(*) as count FROM courses WHERE department_id = $1",
+      [departmentId]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  } catch (error) {
+    console.error("Error in getDepartmentCourseCount:", error);
+    throw error;
+  }
 }
 
 // Get student count for a specific department
-export function getDepartmentStudentCount(departmentId) {
-  const result = db
-    .prepare("SELECT COUNT(*) as count FROM students WHERE department_id = ?")
-    .get(departmentId);
-  return result?.count || 0;
+export async function getDepartmentStudentCount(departmentId) {
+  try {
+    const result = await pool.query(
+      "SELECT COUNT(*) as count FROM students WHERE department_id = $1",
+      [departmentId]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  } catch (error) {
+    console.error("Error in getDepartmentStudentCount:", error);
+    throw error;
+  }
 }
 
 // Get all departments with course and student counts
-export function getDepartmentsWithCounts() {
-  const departments = getDepartments();
-  return departments.map((department) => ({
-    ...department,
-    course_count: getDepartmentCourseCount(department.id),
-    student_count: getDepartmentStudentCount(department.id),
-  }));
+export async function getDepartmentsWithCounts() {
+  try {
+    const departments = await getDepartments();
+    const departmentsWithCounts = await Promise.all(
+      departments.map(async (department) => ({
+        ...department,
+        course_count: await getDepartmentCourseCount(department.id),
+        student_count: await getDepartmentStudentCount(department.id),
+      }))
+    );
+    return departmentsWithCounts;
+  } catch (error) {
+    console.error("Error in getDepartmentsWithCounts:", error);
+    throw error;
+  }
 }
 
 // Function to promote students to next semester
-export function promoteStudentsToNextSemester(studentIds) {
+export async function promoteStudentsToNextSemester(studentIds) {
   const results = { success: 0, failed: [] };
 
-  // Use transaction for data consistency
-  const transaction = db.transaction(() => {
+  // Use PostgreSQL transaction for data consistency
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
     for (const studentId of studentIds) {
       try {
-        const student = getStudentById(studentId);
+        const student = await getStudentById(studentId);
         if (!student) {
           results.failed.push({ id: studentId, name: "Unknown", error: "Student not found" });
           continue;
@@ -1247,19 +1390,19 @@ export function promoteStudentsToNextSemester(studentIds) {
         }
 
         // Update student
-        const stmt = db.prepare(
-          "UPDATE students SET current_year = ?, current_semester = ? WHERE id = ?"
+        const updateResult = await client.query(
+          "UPDATE students SET current_year = $1, current_semester = $2 WHERE id = $3",
+          [newYear, newSemester, studentId]
         );
-        const updateResult = stmt.run(newYear, newSemester, studentId);
 
-        if (updateResult.changes === 0) {
+        if (updateResult.rowCount === 0) {
           results.failed.push({ id: studentId, name: student.name, error: "Update failed" });
         } else {
           results.success++;
         }
       } catch (error) {
         console.error(`Failed to promote student ${studentId}:`, error);
-        const student = getStudentById(studentId);
+        const student = await getStudentById(studentId);
         results.failed.push({
           id: studentId,
           name: student?.name || "Unknown",
@@ -1267,29 +1410,33 @@ export function promoteStudentsToNextSemester(studentIds) {
         });
       }
     }
-  });
 
-  try {
-    transaction();
+    await client.query("COMMIT");
     return results;
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Transaction failed during student promotion:", error);
     throw new Error("Bulk promotion failed. No students were promoted.");
+  } finally {
+    client.release();
   }
 }
 
 // Function to take students down a semester
-export function takeStudentsDownSemester(studentIds) {
+export async function takeStudentsDownSemester(studentIds) {
   const results = {
     success: 0,
     failed: [],
   };
 
-  // Use transaction for data consistency
-  const transaction = db.transaction(() => {
+  // Use PostgreSQL transaction for data consistency
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
     for (const studentId of studentIds) {
       try {
-        const student = getStudentById(studentId);
+        const student = await getStudentById(studentId);
         if (!student) {
           results.failed.push({
             id: studentId,
@@ -1332,12 +1479,12 @@ export function takeStudentsDownSemester(studentIds) {
         }
 
         // Update student
-        const stmt = db.prepare(
-          "UPDATE students SET current_year = ?, current_semester = ? WHERE id = ?"
+        const updateResult = await client.query(
+          "UPDATE students SET current_year = $1, current_semester = $2 WHERE id = $3",
+          [newYear, newSemester, studentId]
         );
-        const updateResult = stmt.run(newYear, newSemester, studentId);
 
-        if (updateResult.changes === 0) {
+        if (updateResult.rowCount === 0) {
           results.failed.push({
             id: studentId,
             name: student.name,
@@ -1349,7 +1496,7 @@ export function takeStudentsDownSemester(studentIds) {
         }
       } catch (error) {
         console.error(`Failed to take down student ${studentId}:`, error);
-        const student = getStudentById(studentId);
+        const student = await getStudentById(studentId);
         results.failed.push({
           id: studentId,
           name: student?.name || "Unknown",
@@ -1358,19 +1505,20 @@ export function takeStudentsDownSemester(studentIds) {
         });
       }
     }
-  });
 
-  try {
-    transaction();
+    await client.query("COMMIT");
     return results;
   } catch (error) {
+    await client.query("ROLLBACK");
     console.error("Transaction failed during student demotion:", error);
     throw new Error("Bulk demotion failed. No students were demoted.");
+  } finally {
+    client.release();
   }
 }
 
 // Function to get passed exams count for a student
-export function getStudentPassedExamsCount(studentId) {
+export async function getStudentPassedExamsCount(studentId) {
   try {
     // Validate input
     if (!studentId || isNaN(parseInt(studentId))) {
@@ -1378,20 +1526,19 @@ export function getStudentPassedExamsCount(studentId) {
     }
 
     // Get all registered courses for the student
-    const registeredCourses = db
-      .prepare(
-        `
-        SELECT cr.course_id
-        FROM course_registrations cr
-        WHERE cr.student_id = ?
-        `
-      )
-      .all(studentId);
+    const registeredCourses = await pool.query(
+      `
+      SELECT cr.course_id
+      FROM student_courses cr
+      WHERE cr.student_id = $1
+    `,
+      [studentId]
+    );
 
-    const total = registeredCourses.length;
+    const total = registeredCourses.rows.length;
 
     // Get effective results (considering backlog improvements) and count passed ones
-    const effectiveResults = getEffectiveStudentResults(studentId);
+    const effectiveResults = await getEffectiveStudentResults(studentId);
     const passed = effectiveResults.filter((result) => result.marks >= 40).length;
 
     return { passed, total };
@@ -1401,8 +1548,63 @@ export function getStudentPassedExamsCount(studentId) {
   }
 }
 
+// Get published results count for a student
+export async function getStudentPublishedResultsCount(studentId) {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*) as count 
+       FROM results 
+       WHERE student_id = $1 AND published = true`,
+      [studentId]
+    );
+    return parseInt(result.rows[0].count) || 0;
+  } catch (error) {
+    console.error("Error in getStudentPublishedResultsCount:", error);
+    throw error;
+  }
+}
+
+// Get total credits for a student
+export async function getStudentTotalCredits(studentId) {
+  try {
+    const result = await pool.query(
+      `SELECT SUM(c.credits) as total
+       FROM student_courses cr
+       JOIN courses c ON cr.course_id = c.id
+       WHERE cr.student_id = $1`,
+      [studentId]
+    );
+    return parseInt(result.rows[0].total) || 0;
+  } catch (error) {
+    console.error("Error in getStudentTotalCredits:", error);
+    throw error;
+  }
+}
+
+// Get admin statistics
+export async function getAdminStats() {
+  try {
+    const totalStudents = await pool.query("SELECT COUNT(*) as count FROM students");
+    const totalCourses = await pool.query("SELECT COUNT(*) as count FROM courses");
+    const totalDepartments = await pool.query("SELECT COUNT(*) as count FROM departments");
+    const publishedResults = await pool.query(
+      "SELECT COUNT(*) as count FROM results WHERE published = true"
+    );
+
+    return {
+      totalStudents: parseInt(totalStudents.rows[0].count),
+      totalCourses: parseInt(totalCourses.rows[0].count),
+      totalDepartments: parseInt(totalDepartments.rows[0].count),
+      publishedResults: parseInt(publishedResults.rows[0].count),
+    };
+  } catch (error) {
+    console.error("Error in getAdminStats:", error);
+    throw error;
+  }
+}
+
 // Function to validate course unregistration business logic
-export function canUnregisterStudentFromCourse(studentId, courseId) {
+export async function canUnregisterStudentFromCourse(studentId, courseId) {
   try {
     // Validate inputs
     if (!studentId || !courseId || isNaN(parseInt(studentId)) || isNaN(parseInt(courseId))) {
@@ -1410,16 +1612,17 @@ export function canUnregisterStudentFromCourse(studentId, courseId) {
     }
 
     // Check if student is registered for this course
-    if (!isStudentRegisteredForCourse(studentId, courseId)) {
+    if (!(await isStudentRegisteredForCourse(studentId, courseId))) {
       return { canUnregister: false, error: "Student is not registered for this course" };
     }
 
     // Check if student has a published result for this course
-    const result = db
-      .prepare("SELECT id FROM results WHERE student_id = ? AND course_id = ? AND published = 1")
-      .get(studentId, courseId);
+    const result = await pool.query(
+      "SELECT id FROM results WHERE student_id = $1 AND course_id = $2 AND published = true",
+      [studentId, courseId]
+    );
 
-    if (result) {
+    if (result.rows.length > 0) {
       return {
         canUnregister: false,
         error: "Cannot unregister from courses with published results",

@@ -79,7 +79,7 @@ export default function EditStudent({ params }) {
       const response = await fetch("/api/admin/departments");
       if (response.ok) {
         const data = await response.json();
-        setDepartments(data);
+        setDepartments(data.departments || []);
       }
     } catch (error) {
       console.error("Failed to fetch departments:", error);

@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
       return Response.json({ error: "Invalid course ID" }, { status: 400 });
     }
 
-    const course = getCourseById(courseId);
+    const course = await getCourseById(courseId);
 
     if (!course) {
       return Response.json({ error: "Course not found" }, { status: 404 });
@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
     }
 
     // Update the course
-    const updatedCourse = updateCourse(courseId, {
+    const updatedCourse = await updateCourse(courseId, {
       course_code,
       course_name,
       department_id,
@@ -95,7 +95,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete the course
-    const deleted = deleteCourse(courseId);
+    const deleted = await deleteCourse(courseId);
 
     if (!deleted) {
       return Response.json(

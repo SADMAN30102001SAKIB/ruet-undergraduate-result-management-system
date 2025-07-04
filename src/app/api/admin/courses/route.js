@@ -10,8 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const courses = getCoursesWithStudentCounts();
-    return NextResponse.json(courses);
+    const courses = await getCoursesWithStudentCounts();
+    return NextResponse.json({ courses });
   } catch (error) {
     console.error("Get courses error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -43,7 +43,7 @@ export async function POST(request) {
     }
 
     // Check if department exists
-    const departments = getDepartments();
+    const departments = await getDepartments();
     const departmentExists = departments.some((d) => d.id === parseInt(department_id));
 
     if (!departmentExists) {
@@ -51,7 +51,7 @@ export async function POST(request) {
     }
 
     try {
-      const course = createCourse({
+      const course = await createCourse({
         course_code: course_code.toUpperCase(),
         course_name,
         department_id: parseInt(department_id),
@@ -61,15 +61,9 @@ export async function POST(request) {
         cgpa_weight: parseFloat(cgpa_weight) || 4.0,
       });
 
-      return NextResponse.json(course, { status: 201 });
+      return NextResponse.json({ course }, { status: 201 });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string" &&
-        error.message.includes("UNIQUE constraint failed")
-      ) {
+      if (error.message && error.message.includes("already exists")) {
         return NextResponse.json(
           { error: "Course code already exists for this department" },
           { status: 409 }

@@ -18,7 +18,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Invalid student ID" }, { status: 400 });
     }
 
-    const deleteResult = deleteStudent(studentId);
+    const deleteResult = await deleteStudent(studentId);
 
     if (!deleteResult.success) {
       if (deleteResult.error === "Student not found") {
@@ -49,7 +49,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid student ID" }, { status: 400 });
     }
 
-    const student = getStudentById(studentId);
+    const student = await getStudentById(studentId);
 
     if (!student) {
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
@@ -135,7 +135,7 @@ export async function PUT(request, { params }) {
     }
 
     try {
-      const updatedStudent = updateStudent(studentId, {
+      const updatedStudent = await updateStudent(studentId, {
         name: data.name.trim(),
         parent_name: data.parent_name.trim(),
         phone: data.phone.trim(),
@@ -149,30 +149,27 @@ export async function PUT(request, { params }) {
 
       return NextResponse.json(updatedStudent);
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error &&
-        typeof error.message === "string"
-      ) {
-        const message = error.message;
-        if (message.includes("UNIQUE constraint failed")) {
-          if (message.includes("roll_number")) {
-            return NextResponse.json(
-              { error: "Roll number already exists", field: "roll_number" },
-              { status: 409 }
-            );
-          }
-          if (message.includes("registration_number")) {
-            return NextResponse.json(
-              {
-                error: "Registration number already exists",
-                field: "registration_number",
-              },
-              { status: 409 }
-            );
-          }
+      if (error.message && error.message.includes("already exists")) {
+        const message = error.message.toLowerCase();
+        if (message.includes("roll number")) {
+          return NextResponse.json(
+            { error: "Roll number already exists", field: "roll_number" },
+            { status: 409 }
+          );
         }
+        if (message.includes("registration number")) {
+          return NextResponse.json(
+            {
+              error: "Registration number already exists",
+              field: "registration_number",
+            },
+            { status: 409 }
+          );
+        }
+        return NextResponse.json(
+          { error: "Student with this roll number or registration number already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }

@@ -26,7 +26,7 @@ export async function POST(request) {
       );
     }
 
-    const results = takeStudentsDownSemester(validIds);
+    const results = await takeStudentsDownSemester(validIds);
 
     return NextResponse.json({
       success: results.success,
