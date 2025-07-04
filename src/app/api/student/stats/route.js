@@ -45,7 +45,7 @@ export async function GET() {
     const effectiveResults = await getEffectiveStudentResults(user.id);
     const completedCredits = effectiveResults
       .filter((result) => result.marks >= 40)
-      .reduce((sum, result) => sum + result.credits, 0);
+      .reduce((sum, result) => sum + parseFloat(result.credits || 0), 0);
 
     return NextResponse.json({
       totalRegistrations: registrations.length,

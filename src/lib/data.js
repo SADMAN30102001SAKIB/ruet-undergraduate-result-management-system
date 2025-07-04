@@ -789,7 +789,14 @@ export async function getStudentResultsWithBacklog(studentId) {
       [studentId]
     );
 
-    const allResults = result.rows;
+    const allResults = result.rows.map((row) => ({
+      ...row,
+      credits: parseFloat(row.credits || 0),
+      cgpa_weight: parseFloat(row.cgpa_weight || 0),
+      year: parseInt(row.year || 1),
+      marks: parseFloat(row.marks || 0),
+    }));
+
     const regularResults = allResults.filter((r) => !r.is_backlog);
     const backlogResults = allResults.filter((r) => r.is_backlog);
 
@@ -1084,6 +1091,13 @@ export async function getStudentCGPA(studentId) {
   try {
     const { regularResults, backlogResults } = await getStudentResultsWithBacklog(studentId);
 
+    console.log(`CGPA Debug for student ${studentId}:`, {
+      regularResultsCount: regularResults.length,
+      backlogResultsCount: backlogResults.length,
+      sampleRegularResult: regularResults[0],
+      sampleBacklogResult: backlogResults[0],
+    });
+
     // Create a map to track the best result for each course, preserving backlog status
     const effectiveResults = new Map();
 
@@ -1106,6 +1120,11 @@ export async function getStudentCGPA(studentId) {
       return a.course_code.localeCompare(b.course_code);
     });
 
+    console.log(`Effective results for CGPA calculation:`, {
+      effectiveResultsCount: results.length,
+      sampleEffectiveResult: results[0],
+    });
+
     // Group results by semester
     const semesterGroups = results.reduce((acc, result) => {
       const key = `${result.year}-${result.semester}`;
@@ -1116,10 +1135,13 @@ export async function getStudentCGPA(studentId) {
       return acc;
     }, {});
 
+    console.log(`Semester groups:`, Object.keys(semesterGroups));
+
     // Calculate SGPA for each semester using backlog-aware calculation
     const sgpas = Object.entries(semesterGroups).map(([key, semesterResults]) => {
       const [year, semester] = key.split("-");
       const sgpa = calculateSGPAWithBacklog(semesterResults);
+      console.log(`SGPA for ${key}:`, sgpa, `from ${semesterResults.length} results`);
       return {
         year: parseInt(year),
         semester,
@@ -1132,6 +1154,12 @@ export async function getStudentCGPA(studentId) {
       sgpas.length > 0
         ? Number((sgpas.reduce((sum, sem) => sum + sem.sgpa, 0) / sgpas.length).toFixed(2))
         : 0;
+
+    console.log(`Final CGPA calculation:`, {
+      sgpasCount: sgpas.length,
+      sgpas: sgpas,
+      calculatedCGPA: cgpa,
+    });
 
     return { sgpas, cgpa };
   } catch (error) {
@@ -1735,7 +1763,7 @@ export async function getStudentTotalCredits(studentId) {
        WHERE cr.student_id = $1`,
       [studentId]
     );
-    return parseInt(result.rows[0].total) || 0;
+    return parseFloat(result.rows[0].total) || 0;
   } catch (error) {
     console.error("Error in getStudentTotalCredits:", error);
     throw error;

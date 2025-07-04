@@ -44,12 +44,14 @@ export function calculateSGPA(results) {
   let totalGradePoints = 0;
 
   for (const result of results) {
+    // Ensure credits is a number
+    const credits = parseFloat(result.credits || 0);
     const gradeInfo = getGradeFromMarks(result.marks);
 
     // Only include passed courses (D and above, exclude F)
-    if (gradeInfo.gradePoint > 0) {
-      totalCredits += result.credits;
-      totalGradePoints += gradeInfo.gradePoint * result.credits;
+    if (gradeInfo.gradePoint > 0 && credits > 0) {
+      totalCredits += credits;
+      totalGradePoints += gradeInfo.gradePoint * credits;
     }
   }
 
@@ -89,20 +91,41 @@ export function calculateSGPAWithBacklog(results) {
   let totalCredits = 0;
   let totalGradePoints = 0;
 
+  console.log(`calculateSGPAWithBacklog: Processing ${results.length} results`);
+
   for (const result of results) {
+    // Ensure credits is a number
+    const credits = parseFloat(result.credits || 0);
+
     // Use appropriate grading function based on backlog status
     const gradeInfo = result.is_backlog
       ? getBacklogGradeFromMarks(result.marks)
       : getGradeFromMarks(result.marks);
 
+    console.log(
+      `Result: ${result.course_code}, marks: ${result.marks}, credits: ${credits}, grade: ${gradeInfo.grade}, gradePoint: ${gradeInfo.gradePoint}, is_backlog: ${result.is_backlog}`
+    );
+
     // Only include passed courses (D and above, exclude F)
-    if (gradeInfo.gradePoint > 0) {
-      totalCredits += result.credits;
-      totalGradePoints += gradeInfo.gradePoint * result.credits;
+    if (gradeInfo.gradePoint > 0 && credits > 0) {
+      totalCredits += credits;
+      totalGradePoints += gradeInfo.gradePoint * credits;
+      console.log(
+        `Added to calculation - totalCredits: ${totalCredits}, totalGradePoints: ${totalGradePoints}`
+      );
+    } else {
+      console.log(
+        `Excluded from calculation - gradePoint: ${gradeInfo.gradePoint}, credits: ${credits}`
+      );
     }
   }
 
-  return totalCredits > 0 ? Number((totalGradePoints / totalCredits).toFixed(2)) : 0;
+  const sgpa = totalCredits > 0 ? Number((totalGradePoints / totalCredits).toFixed(2)) : 0;
+  console.log(
+    `Final SGPA: ${sgpa} (totalGradePoints: ${totalGradePoints}, totalCredits: ${totalCredits})`
+  );
+
+  return sgpa;
 }
 
 // Format utilities
