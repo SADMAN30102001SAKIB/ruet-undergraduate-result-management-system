@@ -1,7 +1,8 @@
 import { pool, executeWithRetry } from "../postgres";
 import { getGradeFromMarks, getBacklogGradeFromMarks, calculateSGPAWithBacklog } from "../utils";
 import { isStudentRegisteredForCourse } from "./registrations";
-import { getAllDepartmentCodes, getAllCourseYears, getAllCourseSemesters } from "./departments";
+import { getAllDepartmentCodes } from "./departments";
+import { getAllCourseYears, getAllCourseSemesters } from "./courses";
 
 // Result operations
 export async function getStudentResults(studentId) {

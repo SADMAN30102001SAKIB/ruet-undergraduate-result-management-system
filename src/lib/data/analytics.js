@@ -1,5 +1,5 @@
 import { pool } from "../postgres";
-import { getEffectiveStudentResults } from "./students";
+import { getEffectiveStudentResults } from "./results";
 
 // Functions to get all possible filter values for admin pages
 export async function getAllYears() {
