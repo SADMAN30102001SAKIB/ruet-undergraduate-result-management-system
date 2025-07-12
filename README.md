@@ -169,16 +169,6 @@ Required environment variables:
 POSTGRES_URL="postgresql://username:password@host:port/database"
 ```
 
-### Testing
-
-A comprehensive verification script is included to test all APIs:
-
-```bash
-node comprehensive-verification.mjs
-```
-
-This script tests all 32 endpoints and ensures full functionality.
-
 ### Adding New Features
 
 1. Create database schema changes in `lib/postgres.js`
@@ -186,7 +176,6 @@ This script tests all 32 endpoints and ensures full functionality.
 3. Create API routes in `app/api/`
 4. Build UI components and pages
 5. Update middleware for route protection if needed
-6. Run the verification script to ensure functionality
 
 ## Deployment
 
