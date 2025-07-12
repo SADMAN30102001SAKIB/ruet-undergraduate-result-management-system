@@ -356,21 +356,22 @@ export default function AdminResults() {
               <div className={styles.statValue}>
                 {filteredResults.length > 0
                   ? (() => {
-                      const regularResults = filteredResults.filter((r) => !r.is_backlog);
-                      const passedRegular = regularResults.filter((r) => r.marks >= 40);
-                      return regularResults.length > 0
-                        ? ((passedRegular.length / regularResults.length) * 100).toFixed(1) + "%"
+                      const allResults = filteredResults;
+                      const allPassed = allResults.filter((r) => r.marks >= 40); // Both regular + backlog passes
+                      return allResults.length > 0
+                        ? ((allPassed.length / allResults.length) * 100).toFixed(1) + "%"
                         : "0.0%";
                     })()
                   : "0.0%"}
               </div>
               <div className={styles.statInfo}>
                 {(() => {
-                  const regularResults = filteredResults.filter((r) => !r.is_backlog);
-                  const passedRegular = regularResults.filter((r) => r.marks >= 40);
-                  const failedRegular = regularResults.filter((r) => r.marks < 40);
-                  const backlogResults = filteredResults.filter((r) => r.is_backlog);
-                  return `${passedRegular.length} passed, ${failedRegular.length} failed, ${backlogResults.length} backlog`;
+                  const allResults = filteredResults;
+                  const allPassed = allResults.filter((r) => r.marks >= 40);
+                  const allFailed = allResults.filter((r) => r.marks < 40);
+                  const regularPassed = allResults.filter((r) => !r.is_backlog && r.marks >= 40);
+                  const backlogPassed = allResults.filter((r) => r.is_backlog && r.marks >= 40);
+                  return `${allPassed.length} total passed (${regularPassed.length} regular, ${backlogPassed.length} backlog), ${allFailed.length} failed`;
                 })()}
               </div>
             </CardContent>
