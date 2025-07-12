@@ -12,7 +12,7 @@ export default function Home() {
         <header className={styles.header}>
           <div className={styles.headerBrand}>
             <GraduationCap className={styles.brandIcon} />
-            <h1 className={styles.brandTitle}>Student Result Management System</h1>
+            <h1 className={styles.brandTitle}>RUET Undergraduate Result Management System</h1>
           </div>
         </header>
 
@@ -20,8 +20,8 @@ export default function Home() {
         <section className={styles.hero}>
           <h2 className={styles.heroTitle}>Manage Academic Excellence</h2>
           <p className={styles.heroDescription}>
-            A comprehensive platform for managing student records, course enrollment, and academic
-            results with automated CGPA calculation.
+            A comprehensive platform for managing RUET undergraduate students' records, course
+            enrollment, and academic results with automated CGPA calculation.
           </p>
         </section>
 
@@ -104,7 +104,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className={styles.footer}>
-          <p>&copy; 2025 Student Result Management System. All rights reserved.</p>
+          <p>&copy; 2025 RUET Undergraduate Result Management System. All rights reserved.</p>
         </footer>
       </div>
     </div>

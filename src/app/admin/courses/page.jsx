@@ -132,7 +132,8 @@ export default function AdminCourses() {
               <h1 className={styles.headerTitle}>Course Management</h1>
               <p className={styles.headerSubtitle}>Manage academic courses and curriculum</p>
             </div>
-          </div>        </header>
+          </div>
+        </header>
 
         {/* Actions Bar */}
         <div className={styles.actionsBar}>

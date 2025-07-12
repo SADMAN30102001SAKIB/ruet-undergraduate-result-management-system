@@ -121,7 +121,8 @@ export default function StudentDashboard() {
               <p className={styles.brandSubtitle}>Welcome, {profile?.name || "Student"}</p>
             </div>
           </div>
-          <div className={styles.headerActions}>            <Button onClick={handleLogout} variant="outline" size="sm">
+          <div className={styles.headerActions}>
+            <Button onClick={handleLogout} variant="outline" size="sm">
               <LogOut className={styles.logoutIcon} />
               Logout
             </Button>
@@ -273,7 +274,7 @@ export default function StudentDashboard() {
 
         {/* Footer */}
         <footer className={styles.footer}>
-          <p>&copy; 2025 Student Result Management System. All rights reserved.</p>
+          <p>&copy; 2025 RUET Undergraduate Result Management System. All rights reserved.</p>
         </footer>
       </div>
     </div>

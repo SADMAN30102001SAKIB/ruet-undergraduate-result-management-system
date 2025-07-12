@@ -335,7 +335,8 @@ export default function StudentTranscript() {
             <Button variant="outline" onClick={downloadTranscript}>
               <Download className={styles.downloadIcon} />
               Download PDF
-            </Button>          </div>
+            </Button>
+          </div>
         </header>
 
         {/* Student Info */}

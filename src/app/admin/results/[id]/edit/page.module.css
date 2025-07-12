@@ -1,6 +1,4 @@
-﻿/* Admin Results Edit Page Styles */
-
-.container {
+﻿.container {
   min-height: 100vh;
   background: linear-gradient(to bottom right, var(--color-blue-50), var(--color-indigo-100));
 }

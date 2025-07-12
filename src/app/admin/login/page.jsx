@@ -54,7 +54,8 @@ export default function AdminLogin() {
           <Link href="/" className={styles.headerBrand}>
             <GraduationCap className={styles.brandIcon} />
             <h1 className={styles.brandTitle}>SRMS</h1>
-          </Link>        </header>
+          </Link>
+        </header>
 
         {/* Login Form */}
         <div className={styles.formContainer}>

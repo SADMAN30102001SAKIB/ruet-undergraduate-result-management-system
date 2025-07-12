@@ -232,7 +232,8 @@ export default function AddResult() {
                 <p className={styles.headerSubtitle}>Add new student result and grade</p>
               </div>
             </div>
-            <div className={styles.headerActions}>              <Link href="/admin/results">
+            <div className={styles.headerActions}>
+              <Link href="/admin/results">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.iconSm} ${styles.iconWithMargin}`} />
                   Back to Results

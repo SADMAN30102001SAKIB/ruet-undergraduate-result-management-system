@@ -1,6 +1,6 @@
-# RUET Result Management System
+# RUET Undergraduate Result Management System
 
-A comprehensive web application for managing student records, course enrollment, and academic results with automated CGPA calculation.
+A comprehensive web application for managing records, course enrollment, and academic results of undergraduate students at RUET with automated CGPA calculation.
 
 ## Features
 
@@ -41,7 +41,7 @@ A comprehensive web application for managing student records, course enrollment,
 
 ```bash
 git clone <repository-url>
-cd student-result-management-system
+cd ruet-undergraduate-result-management-system
 ```
 
 2. Install dependencies:

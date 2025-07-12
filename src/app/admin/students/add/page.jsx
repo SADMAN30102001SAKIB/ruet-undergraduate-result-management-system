@@ -134,7 +134,8 @@ export default function AddStudent() {
                 <p className={styles.headerSubtitle}>Add new student to the academic system</p>
               </div>
             </div>
-            <div className={styles.headerRight}>              <Link href="/admin/students">
+            <div className={styles.headerRight}>
+              <Link href="/admin/students">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.icon4} ${styles.mr2}`} />
                   Back to Students

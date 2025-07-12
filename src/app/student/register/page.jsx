@@ -139,7 +139,8 @@ export default function StudentRegister() {
                   } Semester`}
               </p>
             </div>
-          </div>        </header>
+          </div>
+        </header>
 
         {/* Current Semester Notice */}
         {profile && (

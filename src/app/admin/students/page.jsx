@@ -343,7 +343,8 @@ export default function AdminStudents() {
               <p className={styles.brandSubtitle}>Add, edit, and manage student records</p>
             </div>
           </div>
-          <div className={styles.headerActions}>            <Link href="/admin/students/add">
+          <div className={styles.headerActions}>
+            <Link href="/admin/students/add">
               <Button>
                 <Plus className={styles.addIcon} />
                 Add Student

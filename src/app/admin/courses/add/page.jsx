@@ -137,7 +137,8 @@ export default function AddCourse() {
                 <p className={styles.headerSubtitle}>Add new course to the academic curriculum</p>
               </div>
             </div>
-            <div className={styles.headerActions}>              <Link href="/admin/courses">
+            <div className={styles.headerActions}>
+              <Link href="/admin/courses">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className={`${styles.iconSm} ${styles.iconWithMargin}`} />
                   Back to Courses

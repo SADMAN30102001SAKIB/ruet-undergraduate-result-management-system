@@ -231,7 +231,8 @@ export default function AdminResults() {
               <h1 className={styles.headerTitle}>Results Management</h1>
               <p className={styles.headerSubtitle}>Manage student results and grades</p>
             </div>
-          </div>        </header>
+          </div>
+        </header>
 
         {/* Controls */}
         <div className={styles.controls}>

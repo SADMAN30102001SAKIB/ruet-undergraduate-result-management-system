@@ -124,7 +124,8 @@ export default function StudentResults() {
                 View your published course results and academic performance
               </p>
             </div>
-          </div>        </header>
+          </div>
+        </header>
 
         {/* CGPA Overview */}
         <div className={styles.statsGrid}>

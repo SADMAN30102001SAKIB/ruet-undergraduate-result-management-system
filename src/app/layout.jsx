@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Student Result Management System",
-  description: "A comprehensive system for managing student records, courses, and results",
+  title: "RUET Undergraduate Result Management System",
+  description:
+    "A comprehensive system for managing records, courses, and results of undergraduate students at RUET",
 };
 
 export default function RootLayout({ children }) {

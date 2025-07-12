@@ -108,7 +108,8 @@ export default function AdminDepartments() {
               <h1 className={styles.headerTitle}>Department Management</h1>
               <p className={styles.headerSubtitle}>Manage academic departments</p>
             </div>
-          </div>        </header>
+          </div>
+        </header>
 
         {/* Add Department Button */}
         <div className={styles.addButtonSection}>

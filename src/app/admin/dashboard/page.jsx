@@ -114,10 +114,11 @@ export default function AdminDashboard() {
             <GraduationCap className={styles.brandIcon} />
             <div>
               <h1 className={styles.brandTitle}>Admin Dashboard</h1>
-              <p className={styles.brandSubtitle}>Student Result Management System</p>
+              <p className={styles.brandSubtitle}>RUET Undergraduate Result Management System</p>
             </div>
           </div>
-          <div className={styles.headerActions}>            <Button onClick={handleLogout} variant="outline" size="sm">
+          <div className={styles.headerActions}>
+            <Button onClick={handleLogout} variant="outline" size="sm">
               <LogOut className={styles.logoutIcon} />
               Logout
             </Button>
@@ -222,7 +223,7 @@ export default function AdminDashboard() {
 
         {/* Footer */}
         <footer className={styles.footer}>
-          <p>&copy; 2025 Student Result Management System. All rights reserved.</p>
+          <p>&copy; 2025 RUET Undergraduate Result Management System. All rights reserved.</p>
         </footer>
       </div>
     </div>
