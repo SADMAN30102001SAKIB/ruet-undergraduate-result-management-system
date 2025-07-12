@@ -1,4 +1,4 @@
-# Student Result Management System
+# RUET Result Management System
 
 A comprehensive web application for managing student records, course enrollment, and academic results with automated CGPA calculation.
 
