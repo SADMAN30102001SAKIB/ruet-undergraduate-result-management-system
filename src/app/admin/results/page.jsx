@@ -369,9 +369,7 @@ export default function AdminResults() {
                   const allResults = filteredResults;
                   const allPassed = allResults.filter((r) => r.marks >= 40);
                   const allFailed = allResults.filter((r) => r.marks < 40);
-                  const regularPassed = allResults.filter((r) => !r.is_backlog && r.marks >= 40);
-                  const backlogPassed = allResults.filter((r) => r.is_backlog && r.marks >= 40);
-                  return `${allPassed.length} total passed (${regularPassed.length} regular, ${backlogPassed.length} backlog), ${allFailed.length} failed`;
+                  return `${allPassed.length} passed, ${allFailed.length} failed`;
                 })()}
               </div>
             </CardContent>
