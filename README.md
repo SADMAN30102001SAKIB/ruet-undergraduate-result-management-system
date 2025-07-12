@@ -93,7 +93,6 @@ The application uses **PostgreSQL** with the following main tables:
 ### Database Features
 
 - **Automatic Schema Creation**: Tables and relationships are created automatically
-- **Migration Support**: Built-in migration system for schema updates
 - **Connection Pooling**: Optimized database connections for scalability
 - **Data Integrity**: Foreign key constraints and validation rules
 
@@ -157,7 +156,6 @@ src/
 The PostgreSQL database is automatically initialized with the required schema on first run. The system includes:
 
 - **Automatic table creation** with proper relationships
-- **Schema migration** support for updates
 - **Connection pooling** for optimal performance
 
 ### Environment Configuration
