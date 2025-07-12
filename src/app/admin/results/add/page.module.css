@@ -267,3 +267,9 @@
 .iconWithMarginSm {
   margin-right: 0.25rem;
 }
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
