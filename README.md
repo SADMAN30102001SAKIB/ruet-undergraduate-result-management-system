@@ -158,7 +158,6 @@ The PostgreSQL database is automatically initialized with the required schema on
 
 - **Automatic table creation** with proper relationships
 - **Schema migration** support for updates
-- **Sample data seeding** for testing purposes
 - **Connection pooling** for optimal performance
 
 ### Environment Configuration
