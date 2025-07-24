@@ -1,6 +1,6 @@
-import { pool } from "../postgres.js";
-import { getStudentById } from "./students.js";
-import { getCourseById } from "./courses.js";
+import { pool } from "../postgres";
+import { getStudentById } from "./students";
+import { getCourseById } from "./courses";
 
 // Course registration operations
 export async function getStudentRegistrations(studentId, currentYear, currentSemester) {
