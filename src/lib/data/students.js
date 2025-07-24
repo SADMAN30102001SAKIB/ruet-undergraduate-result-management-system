@@ -1,4 +1,6 @@
 import { pool } from "../postgres";
+import { getAllDepartmentCodes } from "./departments";
+import { getAllYears, getAllSemesters, getAllAcademicSessions } from "./analytics";
 
 // Student operations
 export async function getStudents() {
