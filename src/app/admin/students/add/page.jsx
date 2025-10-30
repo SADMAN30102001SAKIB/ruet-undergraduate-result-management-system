@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, UserPlus, Save, User } from "lucide-react";
@@ -24,7 +25,7 @@ export default function AddStudent() {
     roll_number: "",
     registration_number: "",
     department_id: "",
-    academic_session: "2024-2025",
+    academic_session: "",
     current_year: "1",
     current_semester: "odd",
   });
@@ -67,6 +68,9 @@ export default function AddStudent() {
     if (!formData.department_id) newErrors.department_id = "Department is required";
     if (!formData.academic_session.trim())
       newErrors.academic_session = "Academic session is required";
+    else if (!/^\d{4}-\d{4}$/.test(formData.academic_session)) {
+      newErrors.academic_session = "Academic session must be in YYYY-YYYY format (e.g., 2024-2025)";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -162,11 +166,6 @@ export default function AddStudent() {
               <form onSubmit={handleSubmit} className={styles.form}>
                 {/* Personal Information */}
                 <div className={styles.section}>
-                  <h3 className={styles.sectionTitle}>
-                    <User className={`${styles.icon5} ${styles.mr2}`} />
-                    Personal Information
-                  </h3>
-
                   <div className={styles.grid}>
                     <div className={styles.fieldGroup}>
                       <label htmlFor="name" className={styles.label}>
@@ -214,13 +213,11 @@ export default function AddStudent() {
                       <label htmlFor="department_id" className={styles.label}>
                         Department *
                       </label>
-                      <select
+                      <Select
                         id="department_id"
                         value={formData.department_id}
                         onChange={(e) => handleChange("department_id", e.target.value)}
-                        className={`${styles.select} ${
-                          errors.department_id ? styles.errorInput : ""
-                        }`}
+                        className={errors.department_id ? styles.errorInput : ""}
                       >
                         <option value="">Select Department</option>
                         {departments.map((dept) => (
@@ -228,7 +225,7 @@ export default function AddStudent() {
                             {dept.code}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                       {errors.department_id && (
                         <p className={styles.error}>{errors.department_id}</p>
                       )}
@@ -285,7 +282,7 @@ export default function AddStudent() {
                         id="academic_session"
                         value={formData.academic_session}
                         onChange={(e) => handleChange("academic_session", e.target.value)}
-                        placeholder="e.g., 2024-2025"
+                        placeholder="YYYY-YYYY (e.g., 2024-2025)"
                         className={errors.academic_session ? styles.errorInput : ""}
                       />
                       {errors.academic_session && (
@@ -297,7 +294,7 @@ export default function AddStudent() {
                       <label htmlFor="current_year" className={styles.label}>
                         Current Year
                       </label>
-                      <select
+                      <Select
                         id="current_year"
                         value={formData.current_year}
                         onChange={(e) => handleChange("current_year", e.target.value)}
@@ -307,14 +304,14 @@ export default function AddStudent() {
                         <option value="2">2nd Year</option>
                         <option value="3">3rd Year</option>
                         <option value="4">4th Year</option>
-                      </select>
+                      </Select>
                     </div>
 
                     <div className={styles.fieldGroup}>
                       <label htmlFor="current_semester" className={styles.label}>
                         Current Semester
                       </label>
-                      <select
+                      <Select
                         id="current_semester"
                         value={formData.current_semester}
                         onChange={(e) => handleChange("current_semester", e.target.value)}
@@ -322,7 +319,7 @@ export default function AddStudent() {
                       >
                         <option value="odd">Odd</option>
                         <option value="even">Even</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
                 </div>

@@ -1,0 +1,262 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-blue-50) 0%, var(--color-blue-100) 100%);
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headerIcon {
+  height: 2rem;
+  width: 2rem;
+  color: var(--primary);
+}
+
+.headerTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.headerSubtitle {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.headerStatus {
+  display: flex;
+  align-items: center;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.searchContainer {
+  width: 100%;
+  position: relative; /* Added to properly contain the absolutely positioned search icon */
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: var(--muted-foreground);
+}
+
+.searchInput {
+  padding-left: 3rem; /* Increased from 2.5rem to ensure placeholder doesn't overlap icon */
+}
+
+.filterControls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 0.875rem;
+  appearance: none; /* Remove default arrow */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem; /* Make room for the arrow */
+  cursor: pointer;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.loadingText {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+}
+
+.error {
+  text-align: center;
+  padding: 3rem;
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+}
+
+.cardIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+}
+
+.emptyIcon {
+  height: 3rem;
+  width: 3rem;
+  color: var(--muted-foreground);
+  margin: 0 auto 1rem auto;
+}
+
+.emptyText {
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tableHeaderCell {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.tableHeaderCellCenter {
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.15s ease-in-out;
+}
+
+.tableRow:hover {
+  background-color: var(--color-muted);
+}
+
+.tableCell {
+  padding: 0.75rem;
+}
+
+.tableCellCenter {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.studentInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.studentName {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.studentDetails {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.courseInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.courseCode {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.courseName {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.semester {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusRegistered {
+  background-color: rgb(220 252 231);
+  color: rgb(22 163 74);
+}
+
+.statusNotRegistered {
+  background-color: rgb(254 226 226);
+  color: rgb(220 38 38);
+}
+
+.statusOpen {
+  background-color: rgb(220 252 231);
+  color: rgb(22 163 74);
+}
+
+.statusClosed {
+  background-color: rgb(254 226 226);
+  color: rgb(220 38 38);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.deleteButton {
+  color: rgb(220 38 38) !important;
+}
+
+.deleteButton:hover {
+  background-color: rgb(254 226 226) !important;
+  color: rgb(220 38 38) !important;
+}

@@ -223,9 +223,10 @@
 }
 
 .deleteButton {
-  color: rgb(220 38 38);
+  color: rgb(220 38 38) !important;
 }
 
 .deleteButton:hover {
-  color: rgb(185 28 28);
+  background-color: rgb(254 226 226) !important;
+  color: rgb(220 38 38) !important;
 }

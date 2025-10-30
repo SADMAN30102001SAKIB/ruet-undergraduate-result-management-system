@@ -26,7 +26,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const body = await request.json();
-    const { student_id, course_id, marks, published } = body;
+    const { student_id, course_id, marks, published, backlog_group_id } = body;
 
     // Validate required fields
     if (!student_id || !course_id || marks === undefined) {
@@ -39,13 +39,15 @@ export async function POST(request) {
     // Validate marks range
     if (marks < 0 || marks > 100) {
       return NextResponse.json({ error: "Marks must be between 0 and 100" }, { status: 400 });
-    } // Create the result
+    }
+    // Create the result
     try {
       const result = await createResult({
         student_id,
         course_id,
         marks,
         published: published || false,
+        backlog_group_id: backlog_group_id || null,
       });
 
       return NextResponse.json({ result }, { status: 201 });

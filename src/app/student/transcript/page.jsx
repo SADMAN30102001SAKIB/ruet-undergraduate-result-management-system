@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { getGradeFromMarks } from "@/lib/utils";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import {
   GraduationCap,
   ArrowLeft,
@@ -23,6 +23,7 @@ export default function StudentTranscript() {
   const [results, setResults] = useState([]);
   const [effectiveResults, setEffectiveResults] = useState([]);
   const [cgpaData, setCgpaData] = useState(null);
+  const [registeredCourses, setRegisteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showError, PopupComponent } = usePopup();
 
@@ -32,9 +33,10 @@ export default function StudentTranscript() {
 
   const fetchData = async () => {
     try {
-      const [profileRes, resultsRes] = await Promise.all([
+      const [profileRes, resultsRes, registrationsRes] = await Promise.all([
         fetch("/api/student/profile"),
         fetch("/api/student/results"),
+        fetch("/api/student/registrations?all=true"),
       ]);
 
       if (profileRes.ok) {
@@ -59,6 +61,13 @@ export default function StudentTranscript() {
           showError("Authentication Error", "Please log in as a student to view your results.");
           return;
         }
+      }
+
+      if (registrationsRes.ok) {
+        const registrationsData = await registrationsRes.json();
+        setRegisteredCourses(registrationsData.courses || []);
+      } else {
+        console.error("Failed to fetch registrations:", registrationsRes.status);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -234,8 +243,12 @@ export default function StudentTranscript() {
                   ${semesterResults
                     .sort((a, b) => {
                       // Primary sort: Pass/Fail status (passed courses first)
-                      const aGrade = getGradeFromMarks(a.marks);
-                      const bGrade = getGradeFromMarks(b.marks);
+                      const aGrade = a.is_backlog
+                        ? getBacklogGradeFromMarks(a.marks)
+                        : getGradeFromMarks(a.marks);
+                      const bGrade = b.is_backlog
+                        ? getBacklogGradeFromMarks(b.marks)
+                        : getGradeFromMarks(b.marks);
                       const aIsPassed = aGrade.gradePoint > 0;
                       const bIsPassed = bGrade.gradePoint > 0;
 
@@ -256,7 +269,9 @@ export default function StudentTranscript() {
                       return a.course_name.localeCompare(b.course_name);
                     })
                     .map((result) => {
-                      const gradeInfo = getGradeFromMarks(result.marks);
+                      const gradeInfo = result.is_backlog
+                        ? getBacklogGradeFromMarks(result.marks)
+                        : getGradeFromMarks(result.marks);
                       return `
                       <tr>
                         <td>${result.course_code}</td>
@@ -283,9 +298,14 @@ export default function StudentTranscript() {
             <div><strong>Cumulative GPA (CGPA):</strong> ${
               cgpaData?.cgpa?.toFixed(2) || "0.00"
             }</div>
-            <div><strong>Final Grade:</strong> ${
-              cgpaData?.cgpa ? getGradeFromGradePoint(cgpaData.cgpa) : "N/A"
-            }</div>
+            <div><strong>Credits Earned:</strong> ${
+              effectiveResults?.reduce((sum, r) => {
+                const gradeInfo = r.is_backlog
+                  ? getBacklogGradeFromMarks(r.marks)
+                  : getGradeFromMarks(r.marks);
+                return gradeInfo.grade !== "F" ? sum + r.credits : sum;
+              }, 0) || 0
+            } / ${registeredCourses?.reduce((sum, r) => sum + r.credits, 0) || 0}</div>
             <div><strong>Generated on:</strong> ${new Date().toLocaleDateString()}</div>
           </div>
         </div>
@@ -385,18 +405,16 @@ export default function StudentTranscript() {
                 <div className={styles.performanceItem}>
                   <p className={styles.performanceLabel}>Overall CGPA</p>
                   <div className={styles.performanceValue}>{cgpaData.cgpa.toFixed(2)}</div>
-                  <p
-                    className={`${styles.gradeDisplay} ${getGradeColor(
-                      getGradeFromGradePoint(cgpaData.cgpa)
-                    )}`}
-                  >
-                    Grade: {getGradeFromGradePoint(cgpaData.cgpa)}
-                  </p>
                 </div>
                 <div className={styles.performanceItem}>
-                  <p className={styles.performanceLabel}>Total Credits</p>
+                  <p className={styles.performanceLabel}>Credits Earned</p>
                   <div className={styles.performanceValue}>
-                    {effectiveResults?.reduce((sum, r) => sum + r.credits, 0) || 0}
+                    {effectiveResults?.reduce((sum, r) => {
+                      const gradeInfo = r.is_backlog
+                        ? getBacklogGradeFromMarks(r.marks)
+                        : getGradeFromMarks(r.marks);
+                      return gradeInfo.grade !== "F" ? sum + r.credits : sum;
+                    }, 0) || 0}
                   </div>
                   <p className={styles.performanceSubtext}>Credits Completed</p>
                 </div>
@@ -482,8 +500,12 @@ export default function StudentTranscript() {
                           {semesterResults
                             .sort((a, b) => {
                               // Primary sort: Pass/Fail status (passed courses first)
-                              const aGrade = getGradeFromMarks(a.marks);
-                              const bGrade = getGradeFromMarks(b.marks);
+                              const aGrade = a.is_backlog
+                                ? getBacklogGradeFromMarks(a.marks)
+                                : getGradeFromMarks(a.marks);
+                              const bGrade = b.is_backlog
+                                ? getBacklogGradeFromMarks(b.marks)
+                                : getGradeFromMarks(b.marks);
                               const aIsPassed = aGrade.gradePoint > 0;
                               const bIsPassed = bGrade.gradePoint > 0;
 
@@ -504,7 +526,9 @@ export default function StudentTranscript() {
                               return a.course_name.localeCompare(b.course_name);
                             })
                             .map((result) => {
-                              const gradeInfo = getGradeFromMarks(result.marks);
+                              const gradeInfo = result.is_backlog
+                                ? getBacklogGradeFromMarks(result.marks)
+                                : getGradeFromMarks(result.marks);
                               return (
                                 <tr key={result.id} className={styles.tableRow}>
                                   <td className={styles.tableCell}>

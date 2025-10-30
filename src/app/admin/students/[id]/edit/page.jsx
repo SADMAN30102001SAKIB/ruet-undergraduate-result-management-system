@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, Save, User } from "lucide-react";
@@ -107,6 +108,9 @@ export default function EditStudent({ params }) {
     if (!formData.department_id) newErrors.department_id = "Department is required";
     if (!formData.academic_session.trim())
       newErrors.academic_session = "Academic session is required";
+    else if (!/^\d{4}-\d{4}$/.test(formData.academic_session)) {
+      newErrors.academic_session = "Academic session must be in YYYY-YYYY format (e.g., 2024-2025)";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -195,147 +199,149 @@ export default function EditStudent({ params }) {
 
       {/* Main Content */}
       <main className={styles.main}>
-        <Card>
-          <CardHeader>
-            <CardTitle className={styles.cardTitle}>
-              <User className={styles.titleIcon} />
-              Edit Student
-            </CardTitle>
-            <CardDescription>Update student information and academic details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className={styles.form}>
-              <div className={styles.formGrid}>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Student Name *</label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Enter student name"
-                    className={errors.name ? styles.errorInput : ""}
-                  />
-                  {errors.name && <p className={styles.errorText}>{errors.name}</p>}
+        <div className={styles.formContainer}>
+          <Card>
+            <CardHeader>
+              <CardTitle className={styles.cardTitle}>
+                <User className={styles.titleIcon} />
+                Student Information
+              </CardTitle>
+              <CardDescription>Update student information and academic details</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formGrid}>
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Student Name *</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      placeholder="Enter student name"
+                      className={errors.name ? styles.errorInput : ""}
+                    />
+                    {errors.name && <p className={styles.errorText}>{errors.name}</p>}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Parent Name *</label>
+                    <Input
+                      value={formData.parent_name}
+                      onChange={(e) => handleInputChange("parent_name", e.target.value)}
+                      placeholder="Enter parent name"
+                      className={errors.parent_name ? styles.errorInput : ""}
+                    />
+                    {errors.parent_name && <p className={styles.errorText}>{errors.parent_name}</p>}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Phone Number *</label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      placeholder="Enter phone number"
+                      className={errors.phone ? styles.errorInput : ""}
+                    />
+                    {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Department *</label>
+                    <Select
+                      value={formData.department_id}
+                      onChange={(e) => handleInputChange("department_id", e.target.value)}
+                      className={errors.department_id ? styles.errorInput : ""}
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.code}
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.department_id && (
+                      <p className={styles.errorText}>{errors.department_id}</p>
+                    )}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Roll Number *</label>
+                    <Input
+                      value={formData.roll_number}
+                      onChange={(e) => handleInputChange("roll_number", e.target.value)}
+                      placeholder="Enter roll number"
+                      className={errors.roll_number ? styles.errorInput : ""}
+                    />
+                    {errors.roll_number && <p className={styles.errorText}>{errors.roll_number}</p>}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Registration Number *</label>
+                    <Input
+                      value={formData.registration_number}
+                      onChange={(e) => handleInputChange("registration_number", e.target.value)}
+                      placeholder="Enter registration number"
+                      className={errors.registration_number ? styles.errorInput : ""}
+                    />
+                    {errors.registration_number && (
+                      <p className={styles.errorText}>{errors.registration_number}</p>
+                    )}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Academic Session *</label>
+                    <Input
+                      value={formData.academic_session}
+                      onChange={(e) => handleInputChange("academic_session", e.target.value)}
+                      placeholder="YYYY-YYYY (e.g., 2024-2025)"
+                      className={errors.academic_session ? styles.errorInput : ""}
+                    />
+                    {errors.academic_session && (
+                      <p className={styles.errorText}>{errors.academic_session}</p>
+                    )}
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Current Year</label>
+                    <Select
+                      value={formData.current_year}
+                      onChange={(e) => handleInputChange("current_year", e.target.value)}
+                      className={styles.select}
+                    >
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </Select>
+                  </div>
+
+                  <div className={styles.fieldGroup}>
+                    <label className={styles.label}>Current Semester</label>
+                    <Select
+                      value={formData.current_semester}
+                      onChange={(e) => handleInputChange("current_semester", e.target.value)}
+                      className={styles.select}
+                    >
+                      <option value="odd">Odd</option>
+                      <option value="even">Even</option>
+                    </Select>
+                  </div>
                 </div>
 
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Parent Name *</label>
-                  <Input
-                    value={formData.parent_name}
-                    onChange={(e) => handleInputChange("parent_name", e.target.value)}
-                    placeholder="Enter parent name"
-                    className={errors.parent_name ? styles.errorInput : ""}
-                  />
-                  {errors.parent_name && <p className={styles.errorText}>{errors.parent_name}</p>}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Phone Number *</label>
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="Enter phone number"
-                    className={errors.phone ? styles.errorInput : ""}
-                  />
-                  {errors.phone && <p className={styles.errorText}>{errors.phone}</p>}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Department *</label>
-                  <select
-                    value={formData.department_id}
-                    onChange={(e) => handleInputChange("department_id", e.target.value)}
-                    className={`${styles.select} ${errors.department_id ? styles.errorInput : ""}`}
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.id}>
-                        {dept.code}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.department_id && (
-                    <p className={styles.errorText}>{errors.department_id}</p>
-                  )}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Roll Number *</label>
-                  <Input
-                    value={formData.roll_number}
-                    onChange={(e) => handleInputChange("roll_number", e.target.value)}
-                    placeholder="Enter roll number"
-                    className={errors.roll_number ? styles.errorInput : ""}
-                  />
-                  {errors.roll_number && <p className={styles.errorText}>{errors.roll_number}</p>}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Registration Number *</label>
-                  <Input
-                    value={formData.registration_number}
-                    onChange={(e) => handleInputChange("registration_number", e.target.value)}
-                    placeholder="Enter registration number"
-                    className={errors.registration_number ? styles.errorInput : ""}
-                  />
-                  {errors.registration_number && (
-                    <p className={styles.errorText}>{errors.registration_number}</p>
-                  )}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Academic Session *</label>
-                  <Input
-                    value={formData.academic_session}
-                    onChange={(e) => handleInputChange("academic_session", e.target.value)}
-                    placeholder="e.g., 2024-2025"
-                    className={errors.academic_session ? styles.errorInput : ""}
-                  />
-                  {errors.academic_session && (
-                    <p className={styles.errorText}>{errors.academic_session}</p>
-                  )}
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Current Year</label>
-                  <select
-                    value={formData.current_year}
-                    onChange={(e) => handleInputChange("current_year", e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
-                  </select>
-                </div>
-
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label}>Current Semester</label>
-                  <select
-                    value={formData.current_semester}
-                    onChange={(e) => handleInputChange("current_semester", e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="odd">Odd</option>
-                    <option value="even">Even</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className={styles.buttonGroup}>
-                <Link href="/admin/students">
-                  <Button type="button" variant="outline">
-                    Cancel
+                <div className={styles.buttonGroup}>
+                  <Link href="/admin/students">
+                    <Button type="button" variant="outline">
+                      Cancel
+                    </Button>
+                  </Link>
+                  <Button type="submit" disabled={saving}>
+                    <Save className={styles.buttonIcon} />
+                    {saving ? "Saving..." : "Save Changes"}
                   </Button>
-                </Link>
-                <Button type="submit" disabled={saving}>
-                  <Save className={styles.buttonIcon} />
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
       {/* Popup Component */}

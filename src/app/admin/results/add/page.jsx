@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { getGradeFromMarks } from "@/lib/utils";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Plus, AlertCircle } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -24,6 +25,7 @@ export default function AddResult() {
     course_id: "",
     marks: "",
     published: false,
+    backlog_group_id: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,8 @@ export default function AddResult() {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [rollSearchQuery, setRollSearchQuery] = useState("");
+  const [availableBacklogGroups, setAvailableBacklogGroups] = useState([]);
+  const [showBacklogGroupDropdown, setShowBacklogGroupDropdown] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -144,6 +148,52 @@ export default function AddResult() {
     }
   };
 
+  // Handle course selection and backlog group logic
+  useEffect(() => {
+    const handleCourseSelection = async () => {
+      if (!formData.student_id || !formData.course_id) {
+        setShowBacklogGroupDropdown(false);
+        setAvailableBacklogGroups([]);
+        setFormData((prev) => ({ ...prev, backlog_group_id: "" }));
+        return;
+      }
+
+      // Find the selected course to check if it has a failing result
+      const selectedCourse = filteredCourses.find((c) => c.id.toString() === formData.course_id);
+      if (!selectedCourse) return;
+
+      // Check if this course has a failing result (marks < 40)
+      const hasFailingResult = selectedCourse.has_result === 1 && selectedCourse.marks < 40;
+
+      if (hasFailingResult) {
+        // Fetch available backlog groups for this student-course combination
+        try {
+          const response = await fetch(
+            `/api/admin/results/available-backlog-groups?studentId=${formData.student_id}&courseId=${formData.course_id}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setAvailableBacklogGroups(data.groups || []);
+            setShowBacklogGroupDropdown(true);
+          } else {
+            setAvailableBacklogGroups([]);
+            setShowBacklogGroupDropdown(false);
+          }
+        } catch (error) {
+          console.error("Error fetching backlog groups:", error);
+          setAvailableBacklogGroups([]);
+          setShowBacklogGroupDropdown(false);
+        }
+      } else {
+        setShowBacklogGroupDropdown(false);
+        setAvailableBacklogGroups([]);
+        setFormData((prev) => ({ ...prev, backlog_group_id: "" }));
+      }
+    };
+
+    handleCourseSelection();
+  }, [formData.student_id, formData.course_id, filteredCourses]);
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -155,6 +205,11 @@ export default function AddResult() {
       newErrors.marks = "Marks are required";
     } else if (isNaN(marksValue) || marksValue < 0 || marksValue > 100) {
       newErrors.marks = "Marks must be a number between 0 and 100";
+    }
+
+    // Validate backlog group selection if required
+    if (showBacklogGroupDropdown && !formData.backlog_group_id.trim()) {
+      newErrors.backlog_group_id = "Backlog group is required for failed courses";
     }
 
     setErrors(newErrors);
@@ -181,6 +236,7 @@ export default function AddResult() {
           course_id: parseInt(formData.course_id),
           marks: marksValue,
           published: formData.published,
+          backlog_group_id: formData.backlog_group_id ? parseInt(formData.backlog_group_id) : null,
         }),
       });
 
@@ -266,7 +322,7 @@ export default function AddResult() {
                       <Label htmlFor="department" className={styles.label}>
                         Department
                       </Label>
-                      <select
+                      <Select
                         id="department"
                         value={selectedDepartment}
                         onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -278,14 +334,14 @@ export default function AddResult() {
                             {dept.code}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                     {/* Year Filter */}
                     <div className={styles.filterField}>
                       <Label htmlFor="year" className={styles.label}>
                         Year
                       </Label>
-                      <select
+                      <Select
                         id="year"
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(e.target.value)}
@@ -296,14 +352,14 @@ export default function AddResult() {
                         <option value="2">2nd Year</option>
                         <option value="3">3rd Year</option>
                         <option value="4">4th Year</option>
-                      </select>
+                      </Select>
                     </div>
                     {/* Semester Filter */}
                     <div className={styles.filterField}>
                       <Label htmlFor="semester" className={styles.label}>
                         Semester
                       </Label>
-                      <select
+                      <Select
                         id="semester"
                         value={selectedSemester}
                         onChange={(e) => setSelectedSemester(e.target.value)}
@@ -312,7 +368,7 @@ export default function AddResult() {
                         <option value="">All Semesters</option>
                         <option value="odd">Odd</option>
                         <option value="even">Even</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
 
@@ -336,7 +392,7 @@ export default function AddResult() {
                   <Label htmlFor="student_id" className={styles.label}>
                     Student <span className={styles.required}>*</span>
                   </Label>
-                  <select
+                  <Select
                     id="student_id"
                     name="student_id"
                     value={formData.student_id}
@@ -355,7 +411,7 @@ export default function AddResult() {
                           student.current_semester.slice(1)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   {errors.student_id && (
                     <p className={styles.errorMessage}>
                       <AlertCircle className={styles.errorIcon} />
@@ -369,7 +425,7 @@ export default function AddResult() {
                   <Label htmlFor="course_id" className={styles.label}>
                     Registered Course <span className={styles.required}>*</span>
                   </Label>
-                  <select
+                  <Select
                     id="course_id"
                     name="course_id"
                     value={formData.course_id}
@@ -395,7 +451,7 @@ export default function AddResult() {
                           {course.semester})
                         </option>
                       ))}
-                  </select>
+                  </Select>
                   {errors.course_id && (
                     <p className={styles.errorMessage}>
                       <AlertCircle className={styles.errorIcon} />
@@ -403,6 +459,41 @@ export default function AddResult() {
                     </p>
                   )}
                 </div>
+
+                {/* Backlog Group Selection - Only shown for failed courses */}
+                {showBacklogGroupDropdown && (
+                  <div className={styles.filterField}>
+                    <Label htmlFor="backlog_group_id" className={styles.label}>
+                      Backlog Exam Group <span className={styles.required}>*</span>
+                    </Label>
+                    <Select
+                      id="backlog_group_id"
+                      name="backlog_group_id"
+                      value={formData.backlog_group_id}
+                      onChange={handleInputChange}
+                      className={`${styles.select} ${
+                        errors.backlog_group_id ? styles.selectError : ""
+                      }`}
+                    >
+                      <option value="">
+                        {availableBacklogGroups.length === 0
+                          ? "No available backlog groups found"
+                          : "Select a backlog group"}
+                      </option>
+                      {availableBacklogGroups.map((group) => (
+                        <option key={`group-${group.id}`} value={group.id.toString()}>
+                          {group.name} ({new Date(group.created_at).toLocaleDateString()})
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.backlog_group_id && (
+                      <p className={styles.errorMessage}>
+                        <AlertCircle className={styles.errorIcon} />
+                        {errors.backlog_group_id}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Marks Input */}
                 <div className={styles.filterField}>
@@ -429,14 +520,23 @@ export default function AddResult() {
                   )}
                   {formData.marks && !errors.marks && (
                     <p className={styles.gradeDisplay}>
-                      Grade: {getGradeFromMarks(parseFloat(formData.marks)).grade} (
-                      {getGradeFromMarks(parseFloat(formData.marks)).gradePoint} points)
+                      Grade:{" "}
+                      <span style={{ fontWeight: "600" }}>
+                        {showBacklogGroupDropdown
+                          ? getBacklogGradeFromMarks(parseFloat(formData.marks)).grade
+                          : getGradeFromMarks(parseFloat(formData.marks)).grade}
+                      </span>{" "}
+                      (
+                      {showBacklogGroupDropdown
+                        ? getBacklogGradeFromMarks(parseFloat(formData.marks)).gradePoint
+                        : getGradeFromMarks(parseFloat(formData.marks)).gradePoint}{" "}
+                      points)
                     </p>
                   )}
                 </div>
 
                 {/* Published Checkbox */}
-                <div className={styles.checkboxContainer}>
+                <div className={styles.checkboxField}>
                   <input
                     id="published"
                     name="published"
@@ -445,7 +545,7 @@ export default function AddResult() {
                     onChange={handleInputChange}
                     className={styles.checkbox}
                   />
-                  <Label htmlFor="published" className={styles.label}>
+                  <Label htmlFor="published" className={styles.checkboxLabel}>
                     Publish result (students can view)
                   </Label>
                 </div>
@@ -468,8 +568,14 @@ export default function AddResult() {
                       </p>
                       <p>
                         <strong>Grade:</strong>{" "}
-                        {getGradeFromMarks(parseFloat(formData.marks)).grade} (
-                        {getGradeFromMarks(parseFloat(formData.marks)).gradePoint} points)
+                        {showBacklogGroupDropdown
+                          ? getBacklogGradeFromMarks(parseFloat(formData.marks)).grade
+                          : getGradeFromMarks(parseFloat(formData.marks)).grade}{" "}
+                        (
+                        {showBacklogGroupDropdown
+                          ? getBacklogGradeFromMarks(parseFloat(formData.marks)).gradePoint
+                          : getGradeFromMarks(parseFloat(formData.marks)).gradePoint}{" "}
+                        points)
                       </p>
                       <p>
                         <strong>Status:</strong> {formData.published ? "Published" : "Draft"}
@@ -480,14 +586,14 @@ export default function AddResult() {
 
                 {/* Submit Button */}
                 <div className={styles.buttonGroup}>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Adding Result..." : "Add Result"}
+                  </Button>
                   <Link href="/admin/results">
                     <Button type="button" variant="outline">
                       Cancel
                     </Button>
                   </Link>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "Adding Result..." : "Add Result"}
-                  </Button>
                 </div>
               </form>
             </CardContent>

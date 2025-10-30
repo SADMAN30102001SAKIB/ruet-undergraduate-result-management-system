@@ -4,6 +4,7 @@ import {
   getStudentResultsWithBacklog,
   getStudentCGPA,
   getEffectiveStudentResults,
+  getStudentTotalCredits,
 } from "@/lib/data";
 
 export async function GET() {
@@ -18,12 +19,14 @@ export async function GET() {
     const cgpaData = await getStudentCGPA(user.id);
     const effectiveResults = await getEffectiveStudentResults(user.id); // Combine regular and backlog results into a single array for transcript
     const allResults = [...resultsData.regularResults, ...resultsData.backlogResults];
+    const totalCredits = await getStudentTotalCredits(user.id);
     const responseData = {
       results: allResults,
       cgpa: cgpaData,
       regularResults: resultsData.regularResults,
       backlogResults: resultsData.backlogResults,
       effectiveResults: effectiveResults,
+      totalCredits: totalCredits,
     };
 
     return NextResponse.json(responseData);

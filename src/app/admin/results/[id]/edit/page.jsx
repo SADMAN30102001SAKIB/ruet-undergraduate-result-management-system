@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { getGradeFromMarks } from "@/lib/utils";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Save, AlertCircle } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -24,6 +24,7 @@ export default function EditResult() {
     course_id: "",
     marks: "",
     published: false,
+    backlog_group_id: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,8 @@ export default function EditResult() {
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [rollSearchQuery, setRollSearchQuery] = useState("");
+  const [availableBacklogGroups, setAvailableBacklogGroups] = useState([]);
+  const [showBacklogGroupDropdown, setShowBacklogGroupDropdown] = useState(false);
   const router = useRouter();
   const params = useParams();
   const resultLoadedRef = useRef(false);
@@ -47,20 +50,47 @@ export default function EditResult() {
         try {
           const response = await fetch(`/api/admin/results/${params.id}`);
           if (response.ok) {
-            const resultData = await response.json(); // Pre-populate form with existing data
+            const resultData = await response.json();
+
+            // Check if result is published before allowing edit
+            if (resultData.published) {
+              showError("Cannot Edit", "Result needs to be unpublished before it can be edited");
+              router.push("/admin/results");
+              return;
+            }
+
+            // Pre-populate form with existing data
             setFormData({
               student_id: resultData.student_id.toString(),
               course_id: resultData.course_id.toString(),
               marks: resultData.marks.toString(),
               published: resultData.published,
+              backlog_group_id: resultData.backlog_group_id
+                ? resultData.backlog_group_id.toString()
+                : "",
             });
+
+            // Handle backlog group dropdown for editing
+            if (resultData.is_backlog) {
+              // For backlog results, show the group dropdown and fetch available groups
+              try {
+                const groupsResponse = await fetch(
+                  `/api/admin/results/available-backlog-groups?studentId=${resultData.student_id}&courseId=${resultData.course_id}`
+                );
+                if (groupsResponse.ok) {
+                  const groupsData = await groupsResponse.json();
+                  setAvailableBacklogGroups(groupsData.groups || []);
+                  setShowBacklogGroupDropdown(true);
+                }
+              } catch (error) {
+                console.error("Error fetching backlog groups:", error);
+              }
+            }
 
             // Set filters based on student's information to show context
             const student = students.find((s) => s.id === resultData.student_id);
             if (student) {
               setSelectedDepartment(student.department_id.toString());
-              setSelectedYear(student.current_year.toString());
-              setSelectedSemester(student.current_semester);
               // Optionally pre-populate search with student's roll number for easy identification
               setRollSearchQuery(student.roll_number);
             }
@@ -200,6 +230,11 @@ export default function EditResult() {
       }
     }
 
+    // Validate backlog group selection if required
+    if (showBacklogGroupDropdown && !formData.backlog_group_id.trim()) {
+      newErrors.backlog_group_id = "Backlog group is required for failed courses";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -220,6 +255,7 @@ export default function EditResult() {
           course_id: parseInt(formData.course_id),
           marks: parseFloat(formData.marks),
           published: formData.published,
+          backlog_group_id: formData.backlog_group_id ? parseInt(formData.backlog_group_id) : null,
         }),
       });
       if (response.ok) {
@@ -238,7 +274,11 @@ export default function EditResult() {
   };
 
   const currentMarks = parseFloat(formData.marks);
-  const currentGradeInfo = isNaN(currentMarks) ? null : getGradeFromMarks(currentMarks);
+  const currentGradeInfo = isNaN(currentMarks)
+    ? null
+    : showBacklogGroupDropdown
+    ? getBacklogGradeFromMarks(currentMarks)
+    : getGradeFromMarks(currentMarks);
 
   return (
     <div className={styles.container}>
@@ -285,7 +325,7 @@ export default function EditResult() {
                   <h3 className={styles.sectionTitle}>Student & Course Filters</h3>
                   <div className={styles.filtersGrid}>
                     {/* Department Filter */}
-                    <div>
+                    <div className={styles.filterField}>
                       <Label htmlFor="department" className={styles.label}>
                         Department
                       </Label>
@@ -305,7 +345,7 @@ export default function EditResult() {
                     </div>
 
                     {/* Year Filter */}
-                    <div>
+                    <div className={styles.filterField}>
                       <Label htmlFor="year" className={styles.label}>
                         Year
                       </Label>
@@ -324,7 +364,7 @@ export default function EditResult() {
                     </div>
 
                     {/* Semester Filter */}
-                    <div>
+                    <div className={styles.filterField}>
                       <Label htmlFor="semester" className={styles.label}>
                         Semester
                       </Label>
@@ -427,6 +467,43 @@ export default function EditResult() {
                   )}
                 </div>
 
+                {/* Backlog Group Selection - Only shown for backlog results */}
+                {showBacklogGroupDropdown && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <Label htmlFor="backlog_group_id" className={styles.label}>
+                      Backlog Exam Group <span className={styles.required}>*</span>
+                    </Label>
+                    <select
+                      id="backlog_group_id"
+                      name="backlog_group_id"
+                      value={formData.backlog_group_id}
+                      onChange={(e) =>
+                        setFormData({ ...formData, backlog_group_id: e.target.value })
+                      }
+                      className={`${styles.select} ${
+                        errors.backlog_group_id ? styles.selectError : ""
+                      }`}
+                    >
+                      <option value="">
+                        {availableBacklogGroups.length === 0
+                          ? "No available backlog groups found"
+                          : "Select a backlog group"}
+                      </option>
+                      {availableBacklogGroups.map((group) => (
+                        <option key={`group-${group.id}`} value={group.id.toString()}>
+                          {group.name} ({new Date(group.created_at).toLocaleDateString()})
+                        </option>
+                      ))}
+                    </select>
+                    {errors.backlog_group_id && (
+                      <p className={styles.errorMessage}>
+                        <AlertCircle className={styles.errorIcon} />
+                        {errors.backlog_group_id}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Marks Input */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                   <Label htmlFor="marks" className={styles.label}>
@@ -473,7 +550,7 @@ export default function EditResult() {
 
                 {/* Submit Button */}
                 <div className={styles.buttonGroup}>
-                  <Button type="submit" disabled={loading} style={{ flex: 1 }}>
+                  <Button type="submit" disabled={loading}>
                     {loading ? "Updating..." : "Update Result"}
                   </Button>
                   <Link href="/admin/results">

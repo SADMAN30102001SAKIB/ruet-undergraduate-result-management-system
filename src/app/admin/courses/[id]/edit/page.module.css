@@ -82,6 +82,12 @@
   gap: 1rem;
 }
 
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .main {
   max-width: 64rem;
   margin: 0 auto;
@@ -218,6 +224,15 @@
 .icon6 {
   height: 1.5rem;
   width: 1.5rem;
+}
+
+.iconMd {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.iconWithMargin {
+  margin-right: 0.5rem;
 }
 
 /* Spacing utilities */

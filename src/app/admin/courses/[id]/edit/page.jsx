@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { GraduationCap, ArrowLeft, Save } from "lucide-react";
+import { GraduationCap, ArrowLeft, Save, BookOpen } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function EditCourse() {
@@ -197,7 +197,10 @@ export default function EditCourse() {
         {/* Edit Form */}
         <Card className={styles.card}>
           <CardHeader>
-            <CardTitle>Course Details</CardTitle>
+            <CardTitle className={styles.headerInfo}>
+              <BookOpen className={`${styles.iconMd} ${styles.iconWithMargin}`} />
+              Course Information
+            </CardTitle>
             <CardDescription>Modify the course information below</CardDescription>
           </CardHeader>
           <CardContent>

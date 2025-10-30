@@ -66,7 +66,7 @@ export function Popup({
           <div className={styles.header}>
             <div className={styles.headerContent}>
               {getIcon()}
-              <h3 className={styles.title}>{title}</h3>
+              <h3 className={styles.title}>&nbsp;{title}</h3>
             </div>
             <button onClick={onClose} className={styles.closeButton}>
               <X className={styles.closeIcon} />

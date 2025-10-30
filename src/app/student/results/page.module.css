@@ -73,6 +73,8 @@
   font-weight: 500;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .statIcon {
@@ -100,11 +102,13 @@
 .statValue {
   font-size: 1.5rem;
   font-weight: 700;
+  text-align: center;
 }
 
 .statSubtext {
   font-size: 0.75rem;
   color: var(--muted-foreground);
+  text-align: center;
 }
 
 .loadingState {
@@ -308,6 +312,11 @@
   gap: 2rem;
   font-size: 0.875rem;
   color: var(--muted-foreground);
+}
+
+.creditCount {
+  font-weight: 500;
+  color: var(--primary);
 }
 
 .footer {

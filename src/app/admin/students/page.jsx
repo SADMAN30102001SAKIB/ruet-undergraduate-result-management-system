@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
 import {
@@ -372,7 +373,7 @@ export default function AdminStudents() {
                   className={styles.searchInput}
                 />
               </div>
-              <select
+              <Select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 className={styles.select}
@@ -383,8 +384,8 @@ export default function AdminStudents() {
                     {deptCode}
                   </option>
                 ))}
-              </select>
-              <select
+              </Select>
+              <Select
                 value={yearFilter}
                 onChange={(e) => setYearFilter(e.target.value)}
                 className={styles.select}
@@ -396,8 +397,8 @@ export default function AdminStudents() {
                     Year
                   </option>
                 ))}
-              </select>
-              <select
+              </Select>
+              <Select
                 value={semesterFilter}
                 onChange={(e) => setSemesterFilter(e.target.value)}
                 className={styles.select}
@@ -408,7 +409,7 @@ export default function AdminStudents() {
                     {semester.charAt(0).toUpperCase() + semester.slice(1)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </CardContent>
         </Card>

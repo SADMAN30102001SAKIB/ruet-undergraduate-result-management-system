@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { getGradeFromMarks } from "@/lib/utils";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import {
   GraduationCap,
   ArrowLeft,
@@ -313,7 +313,9 @@ export default function StudentCoursesManagement({ params }) {
                               {courses.map((course, index) => {
                                 const gradeInfo =
                                   course.marks !== undefined
-                                    ? getGradeFromMarks(course.marks)
+                                    ? course.is_backlog
+                                      ? getBacklogGradeFromMarks(course.marks)
+                                      : getGradeFromMarks(course.marks)
                                     : null;
                                 const isPassing = gradeInfo ? gradeInfo.gradePoint > 0 : false;
                                 const showUnregisterBtn = !course.has_result && isCurrent;

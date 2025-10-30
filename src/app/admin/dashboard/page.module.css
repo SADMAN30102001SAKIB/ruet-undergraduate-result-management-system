@@ -75,7 +75,7 @@
 }
 
 .loadingCardContent {
-  padding: 1.5rem;
+  padding: 1.5rem !important;
 }
 
 .loadingBar {
@@ -92,7 +92,7 @@
 }
 
 .statCard {
-  padding: 1.5rem;
+  padding: 1.5rem !important;
 }
 
 .statCardContent {

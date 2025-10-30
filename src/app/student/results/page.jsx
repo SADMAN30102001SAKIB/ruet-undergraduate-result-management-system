@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getGradeFromMarks } from "@/lib/utils";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Trophy, TrendingUp, FileText, Award } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function StudentResults() {
   const [resultsData, setResultsData] = useState(null);
   const [cgpaData, setCgpaData] = useState(null);
+  const [registeredCourses, setRegisteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -20,6 +21,7 @@ export default function StudentResults() {
     const fetchData = async () => {
       await fetchResults();
       await fetchCGPAData();
+      await fetchRegisteredCourses();
     };
     fetchData();
   }, []);
@@ -54,6 +56,20 @@ export default function StudentResults() {
       }
     } catch (error) {
       console.error("Failed to fetch CGPA data:", error);
+    }
+  };
+
+  const fetchRegisteredCourses = async () => {
+    try {
+      const response = await fetch("/api/student/registrations?all=true");
+      if (response.ok) {
+        const data = await response.json();
+        setRegisteredCourses(data.courses || []);
+      } else if (response.status === 401) {
+        router.push("/student/login");
+      }
+    } catch (error) {
+      console.error("Failed to fetch registered courses:", error);
     }
   };
 
@@ -106,6 +122,16 @@ export default function StudentResults() {
     return acc;
   }, {});
 
+  // Group registered courses by semester
+  const registeredCoursesBySemester = registeredCourses.reduce((acc, course) => {
+    const key = `Year ${course.year} - ${course.semester}`;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(course);
+    return acc;
+  }, {});
+
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -138,9 +164,6 @@ export default function StudentResults() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>{cgpaData?.cgpa.toFixed(2) || "0.00"}</div>
-              <div className={styles.statSubtext}>
-                Grade: {getGradeFromGradePoint(cgpaData?.cgpa || 0)}
-              </div>
             </CardContent>
           </Card>
 
@@ -209,17 +232,28 @@ export default function StudentResults() {
             </CardHeader>
             <CardContent>
               <div className={styles.sgpaGrid}>
-                {cgpaData.sgpas.map((semester, index) => (
-                  <div key={index} className={styles.sgpaCard}>
-                    <div className={styles.sgpaSemester}>
-                      Year {semester.year} - {semester.semester}
+                {[...cgpaData.sgpas]
+                  .sort((a, b) => {
+                    // Sort by year first (ascending)
+                    if (a.year !== b.year) return a.year - b.year;
+                    // For same year, Odd comes before Even
+                    if (a.semester.toLowerCase() === "odd" && b.semester.toLowerCase() === "even")
+                      return -1;
+                    if (a.semester.toLowerCase() === "even" && b.semester.toLowerCase() === "odd")
+                      return 1;
+                    return 0;
+                  })
+                  .map((semester, index) => (
+                    <div key={index} className={styles.sgpaCard}>
+                      <div className={styles.sgpaSemester}>
+                        Year {semester.year} - {semester.semester}
+                      </div>
+                      <div className={styles.sgpaValue}>{semester.sgpa.toFixed(2)}</div>
+                      <div className={`${styles.sgpaBadge} ${getGradeBadgeColor(semester.sgpa)}`}>
+                        {getGradeFromGradePoint(semester.sgpa)}
+                      </div>
                     </div>
-                    <div className={styles.sgpaValue}>{semester.sgpa.toFixed(2)}</div>
-                    <div className={`${styles.sgpaBadge} ${getGradeBadgeColor(semester.sgpa)}`}>
-                      {getGradeFromGradePoint(semester.sgpa)}
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -251,139 +285,186 @@ export default function StudentResults() {
           </Card>
         ) : (
           <div className={styles.resultsContainer}>
-            {Object.entries(resultsBySemester).map(([semester, semesterResults]) => (
-              <Card key={semester}>
-                <CardHeader>
-                  <CardTitle className={styles.semesterHeader}>
-                    <span>{semester}</span>
-                    <span className={styles.courseCount}>
-                      {semesterResults.length} Course
-                      {semesterResults.length !== 1 ? "s" : ""}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className={styles.tableContainer}>
-                    <table className={styles.resultsTable}>
-                      <thead>
-                        <tr className={styles.tableHeaderRow}>
-                          <th className={styles.tableHeaderLeft}>Course Code</th>
-                          <th className={styles.tableHeaderLeft}>Course Name</th>
-                          <th className={styles.tableHeaderCenter}>Credits</th>
-                          <th className={styles.tableHeaderCenter}>Grade</th>
-                          <th className={styles.tableHeaderCenter}>Grade Point</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {semesterResults.map((result) => (
-                          <tr key={result.id} className={styles.tableRow}>
-                            <td className={styles.tableCellCode}>{result.course_code}</td>
-                            <td className={styles.tableCell}>{result.course_name}</td>
-                            <td className={styles.tableCellCenter}>{result.credits}</td>
-                            <td className={styles.tableCellCenter}>
-                              {(() => {
-                                const gradeInfo = getGradeFromMarks(result.marks);
-                                return (
-                                  <span
-                                    className={`${styles.gradeBadge} ${getGradeBadgeColor(
-                                      gradeInfo.gradePoint
-                                    )}`}
-                                  >
-                                    {gradeInfo.grade}
+            {Object.entries(resultsBySemester)
+              .sort(([a], [b]) => {
+                // Parse year and semester from keys like "Year 1 - Odd"
+                const parseKey = (key) => {
+                  const match = key.match(/Year (\d+) - (\w+)/);
+                  return {
+                    year: parseInt(match[1]),
+                    semester: match[2].toLowerCase(),
+                  };
+                };
+
+                const aParsed = parseKey(a);
+                const bParsed = parseKey(b);
+
+                // Sort by year first
+                if (aParsed.year !== bParsed.year) {
+                  return aParsed.year - bParsed.year;
+                }
+
+                // For same year, Odd comes before Even
+                if (aParsed.semester === "odd" && bParsed.semester === "even") return -1;
+                if (aParsed.semester === "even" && bParsed.semester === "odd") return 1;
+                return 0;
+              })
+              .map(([semester, semesterResults]) => {
+                return (
+                  <Card key={semester}>
+                    <CardHeader>
+                      <CardTitle className={styles.semesterHeader}>
+                        <span>{semester}</span>
+                        <div className={styles.semesterStats}>
+                          <span className={styles.courseCount}>
+                            {semesterResults.length} Course{semesterResults.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className={styles.tableContainer}>
+                        <table className={styles.resultsTable}>
+                          <thead>
+                            <tr className={styles.tableHeaderRow}>
+                              <th className={styles.tableHeaderLeft}>Course Code</th>
+                              <th className={styles.tableHeaderLeft}>Course Name</th>
+                              <th className={styles.tableHeaderCenter}>Credits</th>
+                              <th className={styles.tableHeaderCenter}>Grade</th>
+                              <th className={styles.tableHeaderCenter}>Grade Point</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {semesterResults.map((result) => (
+                              <tr key={result.id} className={styles.tableRow}>
+                                <td className={styles.tableCellCode}>{result.course_code}</td>
+                                <td className={styles.tableCell}>{result.course_name}</td>
+                                <td className={styles.tableCellCenter}>{result.credits}</td>
+                                <td className={styles.tableCellCenter}>
+                                  {(() => {
+                                    const gradeInfo = result.is_backlog
+                                      ? getBacklogGradeFromMarks(result.marks)
+                                      : getGradeFromMarks(result.marks);
+                                    return (
+                                      <span
+                                        className={`${styles.gradeBadge} ${getGradeBadgeColor(
+                                          gradeInfo.gradePoint
+                                        )}`}
+                                      >
+                                        {gradeInfo.grade}
+                                      </span>
+                                    );
+                                  })()}
+                                </td>
+                                <td className={styles.tableCellCenter}>
+                                  <span className={styles.gradePoint}>
+                                    {(result.is_backlog
+                                      ? getBacklogGradeFromMarks(result.marks)
+                                      : getGradeFromMarks(result.marks)
+                                    ).gradePoint.toFixed(2)}
                                   </span>
-                                );
-                              })()}
-                            </td>
-                            <td className={styles.tableCellCenter}>
-                              <span className={styles.gradePoint}>
-                                {getGradeFromMarks(result.marks).gradePoint.toFixed(2)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Semester Summary */}
-                  <div className={styles.semesterSummary}>
-                    <div className={styles.summaryGrid}>
-                      <div>
-                        <span className={styles.summaryLabel}>Credits Earned:</span>
-                        <span className={styles.summaryValue}>
-                          {semesterResults.reduce((sum, r) => sum + r.credits, 0)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className={styles.summaryLabel}>Courses:</span>
-                        <span className={styles.summaryValue}>{semesterResults.length}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Backlog Results for this semester */}
-                  {backlogResultsBySemester[semester] &&
-                    backlogResultsBySemester[semester].length > 0 && (
-                      <div className={styles.backlogSection}>
-                        <div className={styles.backlogHeader}>
-                          <div className={styles.backlogLine}></div>
-                          <span className={styles.backlogLabel}>Backlog Exams</span>
-                          <div className={styles.backlogLine}></div>
-                        </div>
-                        <div className={styles.backlogTableContainer}>
-                          <table className={styles.resultsTable}>
-                            <thead>
-                              <tr className={styles.backlogTableHeaderRow}>
-                                <th className={styles.tableHeaderLeft}>Course Code</th>
-                                <th className={styles.tableHeaderLeft}>Course Name</th>
-                                <th className={styles.tableHeaderCenter}>Credits</th>
-                                <th className={styles.tableHeaderCenter}>Grade</th>
-                                <th className={styles.tableHeaderCenter}>Grade Point</th>
-                                <th className={styles.tableHeaderCenter}>Status</th>
+                                </td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {backlogResultsBySemester[semester].map((result) => (
-                                <tr key={result.id} className={styles.backlogTableRow}>
-                                  <td className={styles.tableCellCode}>{result.course_code}</td>
-                                  <td className={styles.tableCell}>{result.course_name}</td>
-                                  <td className={styles.tableCellCenter}>{result.credits}</td>
-                                  <td className={styles.tableCellCenter}>
-                                    {(() => {
-                                      const gradeInfo = getGradeFromMarks(result.marks);
-                                      return (
-                                        <span
-                                          className={`${styles.gradeBadge} ${getGradeBadgeColor(
-                                            gradeInfo.gradePoint
-                                          )}`}
-                                        >
-                                          {gradeInfo.grade}
-                                        </span>
-                                      );
-                                    })()}
-                                  </td>
-                                  <td className={styles.tableCellCenter}>
-                                    <span className={styles.gradePoint}>
-                                      {getGradeFromMarks(result.marks).gradePoint.toFixed(2)}
-                                    </span>
-                                  </td>
-                                  <td className={styles.tableCellCenter}>
-                                    {result.marks >= 40 ? (
-                                      <span className={styles.statusPassed}>Cleared</span>
-                                    ) : (
-                                      <span className={styles.statusFailed}>Failed Again</span>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Semester Summary */}
+                      <div className={styles.semesterSummary}>
+                        <div className={styles.summaryGrid}>
+                          <div>
+                            <span className={styles.summaryLabel}>Credits Earned:</span>
+                            <span className={styles.summaryValue}>
+                              {(() => {
+                                const earnedCredits = semesterResults
+                                  .filter((regularResult) => {
+                                    // Check if this course is passed (regular >=40 OR backlog >=40)
+                                    const hasRegularPass = regularResult.marks >= 40;
+                                    const hasBacklogPass = backlogResults.some(
+                                      (backlogResult) =>
+                                        backlogResult.course_id === regularResult.course_id &&
+                                        backlogResult.marks >= 40
+                                    );
+                                    return hasRegularPass || hasBacklogPass;
+                                  })
+                                  .reduce((sum, r) => sum + r.credits, 0);
+                                const totalCredits = (
+                                  registeredCoursesBySemester[semester] || []
+                                ).reduce((sum, r) => sum + r.credits, 0);
+                                return `${earnedCredits}/${totalCredits}`;
+                              })()}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    )}
-                </CardContent>
-              </Card>
-            ))}
+
+                      {/* Backlog Results for this semester */}
+                      {backlogResultsBySemester[semester] &&
+                        backlogResultsBySemester[semester].length > 0 && (
+                          <div className={styles.backlogSection}>
+                            <div className={styles.backlogHeader}>
+                              <div className={styles.backlogLine}></div>
+                              <span className={styles.backlogLabel}>Backlog Exams</span>
+                              <div className={styles.backlogLine}></div>
+                            </div>
+                            <div className={styles.backlogTableContainer}>
+                              <table className={styles.resultsTable}>
+                                <thead>
+                                  <tr className={styles.backlogTableHeaderRow}>
+                                    <th className={styles.tableHeaderLeft}>Course Code</th>
+                                    <th className={styles.tableHeaderLeft}>Course Name</th>
+                                    <th className={styles.tableHeaderCenter}>Credits</th>
+                                    <th className={styles.tableHeaderCenter}>Grade</th>
+                                    <th className={styles.tableHeaderCenter}>Grade Point</th>
+                                    <th className={styles.tableHeaderCenter}>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {backlogResultsBySemester[semester].map((result) => (
+                                    <tr key={result.id} className={styles.backlogTableRow}>
+                                      <td className={styles.tableCellCode}>{result.course_code}</td>
+                                      <td className={styles.tableCell}>{result.course_name}</td>
+                                      <td className={styles.tableCellCenter}>{result.credits}</td>
+                                      <td className={styles.tableCellCenter}>
+                                        {(() => {
+                                          const gradeInfo = getBacklogGradeFromMarks(result.marks);
+                                          return (
+                                            <span
+                                              className={`${styles.gradeBadge} ${getGradeBadgeColor(
+                                                gradeInfo.gradePoint
+                                              )}`}
+                                            >
+                                              {gradeInfo.grade}
+                                            </span>
+                                          );
+                                        })()}
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        <span className={styles.gradePoint}>
+                                          {getBacklogGradeFromMarks(
+                                            result.marks
+                                          ).gradePoint.toFixed(2)}
+                                        </span>
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        {result.marks >= 40 ? (
+                                          <span className={styles.statusPassed}>Cleared</span>
+                                        ) : (
+                                          <span className={styles.statusFailed}>Failed Again</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
           </div>
         )}
 

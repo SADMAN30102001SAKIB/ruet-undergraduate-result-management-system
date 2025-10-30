@@ -3,6 +3,7 @@ import { getGradeFromMarks, getBacklogGradeFromMarks, calculateSGPAWithBacklog }
 import { isStudentRegisteredForCourse } from "./registrations";
 import { getAllDepartmentCodes } from "./departments";
 import { getAllCourseYears, getAllCourseSemesters } from "./courses";
+import { isStudentCourseRegisteredInBacklogGroup } from "./backlog";
 
 // Result operations
 export async function getStudentResults(studentId) {
@@ -272,13 +273,39 @@ export async function createResult(result) {
       // If there's an existing failed result, this will be a backlog entry
       const isBacklog = !!backlogCheck.existingResult;
 
+      // If this is a backlog result, validate group registration
+      if (isBacklog) {
+        if (!result.backlog_group_id) {
+          throw new Error("Backlog group ID is required for backlog results");
+        }
+
+        const isRegisteredInGroup = await isStudentCourseRegisteredInBacklogGroup(
+          result.backlog_group_id,
+          result.student_id,
+          result.course_id
+        );
+
+        if (!isRegisteredInGroup) {
+          throw new Error(
+            "Student is not registered for this course in the selected backlog group"
+          );
+        }
+      }
+
       const insertResult = await client.query(
         `
-        INSERT INTO results (student_id, course_id, marks, published, is_backlog) 
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO results (student_id, course_id, marks, published, is_backlog, backlog_group_id) 
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
       `,
-        [result.student_id, result.course_id, result.marks, result.published || false, isBacklog]
+        [
+          result.student_id,
+          result.course_id,
+          result.marks,
+          result.published || false,
+          isBacklog,
+          isBacklog ? result.backlog_group_id : null,
+        ]
       );
 
       await client.query("COMMIT");
@@ -361,6 +388,10 @@ export async function updateResult(id, updates) {
       fields.push(`published = $${paramCount++}`);
       values.push(updates.published);
     }
+    if (updates.backlog_group_id !== undefined) {
+      fields.push(`backlog_group_id = $${paramCount++}`);
+      values.push(updates.backlog_group_id);
+    }
 
     if (fields.length === 0) {
       return (await getResultById(id)) || null;
@@ -401,10 +432,20 @@ export async function deleteResult(id) {
 // Get all filter options for results page
 export async function getResultsFilterOptions() {
   try {
+    // Get unique series from students' academic_session
+    const seriesResult = await pool.query(`
+      SELECT DISTINCT SUBSTRING(academic_session FROM 1 FOR 4) as series
+      FROM students
+      WHERE academic_session IS NOT NULL
+      ORDER BY series DESC
+    `);
+    const series = seriesResult.rows.map((row) => parseInt(row.series));
+
     return {
       departments: await getAllDepartmentCodes(),
       years: await getAllCourseYears(),
       semesters: await getAllCourseSemesters(),
+      series,
     };
   } catch (error) {
     console.error("Error in getResultsFilterOptions:", error);

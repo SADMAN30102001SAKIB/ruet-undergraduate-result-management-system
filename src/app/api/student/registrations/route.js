@@ -2,7 +2,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getStudentRegistrations, getStudentById } from "@/lib/data";
 
-export async function GET() {
+export async function GET(request) {
   try {
     const user = await getCurrentUser();
 
@@ -16,12 +16,22 @@ export async function GET() {
       return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
 
-    // Only get registrations for the student's current year and semester
-    const registrations = await getStudentRegistrations(
-      user.id,
-      student.current_year,
-      student.current_semester
-    );
+    // Check if we should return all registrations or just current semester
+    const { searchParams } = new URL(request.url);
+    const getAll = searchParams.get("all") === "true";
+
+    let registrations;
+    if (getAll) {
+      // Get all registrations for the student
+      registrations = await getStudentRegistrations(user.id);
+    } else {
+      // Only get registrations for the student's current year and semester
+      registrations = await getStudentRegistrations(
+        user.id,
+        student.current_year,
+        student.current_semester
+      );
+    }
 
     return NextResponse.json({ courses: registrations });
   } catch (error) {

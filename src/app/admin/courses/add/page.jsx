@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
 import { GraduationCap, ArrowLeft, BookOpen, Save, AlertCircle } from "lucide-react";
@@ -186,7 +187,7 @@ export default function AddCourse() {
                     <label className={styles.label}>
                       Department <span className={styles.required}>*</span>
                     </label>
-                    <select
+                    <Select
                       value={formData.department_id}
                       onChange={(e) => handleChange("department_id", e.target.value)}
                       className={`${styles.select} ${
@@ -199,7 +200,7 @@ export default function AddCourse() {
                           {dept.code}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                     {errors.department_id && (
                       <p className={styles.errorMessage}>
                         <AlertCircle className={styles.iconSm} />
@@ -234,7 +235,7 @@ export default function AddCourse() {
                     <label className={styles.label}>
                       Academic Year <span className={styles.required}>*</span>
                     </label>
-                    <select
+                    <Select
                       value={formData.year}
                       onChange={(e) => handleChange("year", e.target.value)}
                       className={styles.select}
@@ -243,21 +244,21 @@ export default function AddCourse() {
                       <option value="2">2nd Year</option>
                       <option value="3">3rd Year</option>
                       <option value="4">4th Year</option>
-                    </select>
+                    </Select>
                   </div>
 
                   <div className={styles.fieldGroup}>
                     <label className={styles.label}>
                       Semester <span className={styles.required}>*</span>
                     </label>
-                    <select
+                    <Select
                       value={formData.semester}
                       onChange={(e) => handleChange("semester", e.target.value)}
                       className={styles.select}
                     >
                       <option value="odd">Odd</option>
                       <option value="even">Even</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
 

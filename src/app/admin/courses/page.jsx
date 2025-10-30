@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { GraduationCap, ArrowLeft, BookOpen, Plus, Search, Edit, Trash2 } from "lucide-react";
+import {
+  GraduationCap,
+  ArrowLeft,
+  BookOpen,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Award,
+  Trophy,
+  Star,
+  Crown,
+} from "lucide-react";
 import styles from "./page.module.css";
 
 export default function AdminCourses() {
@@ -203,7 +215,10 @@ export default function AdminCourses() {
         <div className={styles.statsGrid}>
           <Card>
             <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statCardTitle}>1st Year Courses</CardTitle>
+              <CardTitle className={styles.statCardTitle}>
+                <BookOpen className={`${styles.statIcon} ${styles.statIconBlue}`} />
+                1st Year Courses
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
@@ -213,7 +228,10 @@ export default function AdminCourses() {
           </Card>
           <Card>
             <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statCardTitle}>2nd Year Courses</CardTitle>
+              <CardTitle className={styles.statCardTitle}>
+                <Award className={`${styles.statIcon} ${styles.statIconGreen}`} />
+                2nd Year Courses
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
@@ -223,7 +241,10 @@ export default function AdminCourses() {
           </Card>
           <Card>
             <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statCardTitle}>3rd Year Courses</CardTitle>
+              <CardTitle className={styles.statCardTitle}>
+                <Trophy className={`${styles.statIcon} ${styles.statIconOrange}`} />
+                3rd Year Courses
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
@@ -233,7 +254,10 @@ export default function AdminCourses() {
           </Card>
           <Card>
             <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statCardTitle}>4th Year Courses</CardTitle>
+              <CardTitle className={styles.statCardTitle}>
+                <Crown className={`${styles.statIcon} ${styles.statIconPurple}`} />
+                4th Year Courses
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>

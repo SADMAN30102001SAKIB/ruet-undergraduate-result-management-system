@@ -66,11 +66,27 @@ export {
 
 // Analytics and statistics
 export {
-  getAllYears,
-  getAllSemesters,
-  getAllAcademicSessions,
   getStudentPassedExamsCount,
   getStudentPublishedResultsCount,
   getStudentTotalCredits,
   getAdminStats,
 } from "./data/analytics";
+
+// Backlog operations
+export {
+  createBacklogGroup,
+  addToBacklogGroup,
+  removeFromBacklogGroup,
+  getBacklogGroups,
+  getBacklogGroupById,
+  updateBacklogGroup,
+  deleteBacklogGroup,
+  getAvailableBacklogCoursesForStudent,
+  getAvailableBacklogGroupsForStudentCourse,
+  isStudentCourseRegisteredInBacklogGroup,
+  registerStudentForBacklogCourse,
+  unregisterStudentFromBacklogCourse,
+  openBacklogGroup,
+  closeBacklogGroup,
+  getBacklogGroupStats,
+} from "./data/backlog";

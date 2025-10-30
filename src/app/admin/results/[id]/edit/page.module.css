@@ -144,7 +144,7 @@
 .buttonGroup {
   display: flex;
   gap: 0.75rem;
-  justify-content: flex-end;
+  justify-content: flex-start; /* Changed from flex-end to flex-start */
 }
 
 /* Icons */
@@ -189,9 +189,21 @@
 
 .filtersGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .filtersGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* No gap */
 }
 
 .searchContainer {
