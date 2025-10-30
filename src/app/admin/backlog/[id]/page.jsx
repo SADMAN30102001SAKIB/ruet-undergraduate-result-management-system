@@ -7,7 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { GraduationCap, ArrowLeft, Search, UserCheck, UserX, Trash2, Eye } from "lucide-react";
+import { ExamDateModal } from "@/components/ui/exam-date-modal";
+import {
+  GraduationCap,
+  ArrowLeft,
+  Search,
+  UserCheck,
+  UserX,
+  Trash2,
+  Eye,
+  FileText,
+} from "lucide-react";
 import styles from "./page.module.css";
 
 export default function BacklogGroupDetail() {
@@ -19,6 +29,8 @@ export default function BacklogGroupDetail() {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [yearFilter, setYearFilter] = useState("");
   const [semesterFilter, setSemesterFilter] = useState("");
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [examSchedule, setExamSchedule] = useState(null);
   const { showConfirm, showError, PopupComponent } = usePopup();
 
   useEffect(() => {
@@ -137,6 +149,101 @@ export default function BacklogGroupDetail() {
   const years = [...new Set(groupData?.courses.map((c) => c.year) || [])];
   const semesters = [...new Set(groupData?.courses.map((c) => c.semester) || [])];
 
+  const handleGenerateRoutine = async () => {
+    try {
+      const response = await fetch(`/api/admin/backlog/${params.id}/routine`, {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setExamSchedule(data.schedule);
+        setShowDateModal(true);
+      } else {
+        const errorData = await response.json();
+        showError("Generation Failed", errorData.error || "Failed to generate exam routine");
+      }
+    } catch (error) {
+      console.error("Failed to generate routine:", error);
+      showError("Generation Failed", "An unexpected error occurred while generating the routine");
+    }
+  };
+
+  const handleGeneratePDF = async (examDates) => {
+    try {
+      // Import jsPDF dynamically
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+
+      // Title
+      doc.setFontSize(20);
+      doc.text(`${groupData.group.name} - Exam Routine`, 20, 30);
+
+      // Schedule info
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+      doc.text(
+        `Total Courses: ${Object.keys(examSchedule.examDays).reduce(
+          (total, day) => total + examSchedule.examDays[day].length,
+          0
+        )}`,
+        20,
+        55
+      );
+
+      // Table headers
+      const headers = ["Course", "Date", "Roll Numbers"];
+      let yPosition = 75;
+
+      // Draw table header
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      headers.forEach((header, index) => {
+        doc.text(header, 20 + index * 60, yPosition);
+      });
+
+      // Draw header line
+      doc.line(20, yPosition + 2, 180, yPosition + 2);
+
+      yPosition += 10;
+      doc.setFont("helvetica", "normal");
+
+      // Generate routine data (only for registered courses)
+      const { generateExamRoutineData } = await import("@/lib/utils");
+      const registeredCourses = groupData.courses.filter((course) => course.is_registered);
+      const routineData = generateExamRoutineData(examSchedule, examDates, registeredCourses);
+
+      // Add table rows
+      routineData.forEach((item) => {
+        if (yPosition > 270) {
+          // New page if needed
+          doc.addPage();
+          yPosition = 30;
+        }
+
+        // Course
+        doc.text(item.courseCode, 20, yPosition);
+
+        // Date
+        doc.text(new Date(item.date).toLocaleDateString(), 80, yPosition);
+
+        // Roll Numbers (may wrap to multiple lines)
+        const rollNumbers = item.rollNumbers;
+        const maxWidth = 40;
+        const lines = doc.splitTextToSize(rollNumbers, maxWidth);
+        doc.text(lines, 140, yPosition);
+
+        yPosition += Math.max(10, lines.length * 5);
+      });
+
+      // Save the PDF
+      doc.save(`${groupData.group.name.replace(/[^a-zA-Z0-9]/g, "_")}_exam_routine.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      showError("PDF Generation Failed", "An error occurred while generating the PDF");
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -241,6 +348,14 @@ export default function BacklogGroupDetail() {
                 </option>
               ))}
             </select>
+            <Button
+              onClick={handleGenerateRoutine}
+              className={styles.routineButton}
+              disabled={filteredCourses.length === 0}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Create Routine PDF
+            </Button>
           </div>
         </div>
 
@@ -362,6 +477,13 @@ export default function BacklogGroupDetail() {
         </Card>
       </div>
       <PopupComponent />
+      <ExamDateModal
+        isOpen={showDateModal}
+        onClose={() => setShowDateModal(false)}
+        onGeneratePDF={handleGeneratePDF}
+        schedule={examSchedule}
+        groupName={groupData?.group?.name}
+      />
     </div>
   );
 }
