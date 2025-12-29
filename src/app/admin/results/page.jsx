@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ export default function AdminResults() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showError, showConfirm, PopupComponent } = usePopup();
+  const router = useRouter();
   const [filterOptions, setFilterOptions] = useState({
     departments: [],
     years: [],
@@ -195,49 +197,65 @@ export default function AdminResults() {
     });
   };
 
-  const filteredResults = results.filter((result) => {
-    const student = students.find((s) => s.id === result.student_id);
-    const course = courses.find((c) => c.id === result.course_id);
+  const filteredResults = useMemo(() => {
+    return results.filter((result) => {
+      const student = students.find((s) => s.id === result.student_id);
+      const course = courses.find((c) => c.id === result.course_id);
 
-    const matchesSearch =
-      result.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student?.roll_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.course_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      result.course_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        result.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student?.roll_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.course_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        result.course_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesDepartment = !departmentFilter || course?.department_code === departmentFilter;
+      const matchesDepartment = !departmentFilter || course?.department_code === departmentFilter;
 
-    const matchesYear = !yearFilter || course?.year.toString() === yearFilter;
+      const matchesYear = !yearFilter || course?.year.toString() === yearFilter;
 
-    const matchesSemester = !semesterFilter || course?.semester === semesterFilter;
+      const matchesSemester = !semesterFilter || course?.semester === semesterFilter;
 
-    const matchesCourse = !courseFilter || result.course_id.toString() === courseFilter;
+      const matchesCourse = !courseFilter || result.course_id.toString() === courseFilter;
 
-    const matchesSeries = !seriesFilter || student?.academic_session?.startsWith(seriesFilter);
+      const matchesSeries = !seriesFilter || student?.academic_session?.startsWith(seriesFilter);
 
-    const matchesPublished =
-      !publishedFilter || (publishedFilter === "published" ? result.published : !result.published);
+      const matchesPublished =
+        !publishedFilter ||
+        (publishedFilter === "published" ? result.published : !result.published);
 
-    const matchesResultStatus =
-      !resultStatusFilter ||
-      (result.marks >= 40 ? resultStatusFilter === "passed" : resultStatusFilter === "failed");
+      const matchesResultStatus =
+        !resultStatusFilter ||
+        (result.marks >= 40 ? resultStatusFilter === "passed" : resultStatusFilter === "failed");
 
-    const matchesExamType =
-      !examTypeFilter ||
-      (result.is_backlog ? examTypeFilter === "backlog" : examTypeFilter === "regular");
+      const matchesExamType =
+        !examTypeFilter ||
+        (result.is_backlog ? examTypeFilter === "backlog" : examTypeFilter === "regular");
 
-    return (
-      matchesSearch &&
-      matchesDepartment &&
-      matchesYear &&
-      matchesSemester &&
-      matchesCourse &&
-      matchesSeries &&
-      matchesPublished &&
-      matchesResultStatus &&
-      matchesExamType
-    );
-  });
+      return (
+        matchesSearch &&
+        matchesDepartment &&
+        matchesYear &&
+        matchesSemester &&
+        matchesCourse &&
+        matchesSeries &&
+        matchesPublished &&
+        matchesResultStatus &&
+        matchesExamType
+      );
+    });
+  }, [
+    results,
+    students,
+    courses,
+    searchTerm,
+    departmentFilter,
+    yearFilter,
+    semesterFilter,
+    courseFilter,
+    seriesFilter,
+    publishedFilter,
+    resultStatusFilter,
+    examTypeFilter,
+  ]);
 
   // Dynamic filtering for dropdowns based on current selections
   const getFilteredCourses = () => {
@@ -736,7 +754,7 @@ export default function AdminResults() {
                                   );
                                   return;
                                 }
-                                window.location.href = `/admin/results/${result.id}/edit`;
+                                router.push(`/admin/results/${result.id}/edit`);
                               }}
                             >
                               <Edit className="h-4 w-4" />

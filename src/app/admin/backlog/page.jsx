@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ export default function BacklogManagement() {
 
   const fetchGroups = async () => {
     try {
-      const response = await fetch(`/api/admin/backlog?search=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch("/api/admin/backlog");
       if (response.ok) {
         const data = await response.json();
         setGroups(data.groups || []);
@@ -46,13 +46,11 @@ export default function BacklogManagement() {
     }
   };
 
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchGroups();
-    }, 300);
-
-    return () => clearTimeout(debounceTimer);
-  }, [searchTerm]);
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group) =>
+      group.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [groups, searchTerm]);
 
   const handleToggleRegistration = async (groupId, isOpen) => {
     try {
@@ -198,17 +196,17 @@ export default function BacklogManagement() {
               Backlog Groups {loading ? (
                 <span className={styles.skeletonTableRow} style={{ width: '40px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
               ) : (
-                <span>({groups.length})</span>
+                <span>({filteredGroups.length})</span>
               )}
             </CardTitle>
             <CardDescription>
-              {groups.length === 0 && !loading 
+              {filteredGroups.length === 0 && !loading 
                 ? "No backlog groups found" 
                 : "Manage registration status and view group details"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {groups.length === 0 && !loading ? (
+            {filteredGroups.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <Eye className={styles.emptyIcon} />
                 <p className={styles.emptyText}>No backlog groups found</p>
@@ -236,15 +234,17 @@ export default function BacklogManagement() {
                           <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "60px", margin: '0 auto' }}></div></td>
                           <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "80px", margin: '0 auto' }}></div></td>
                           <td className={styles.tableCellCenter}>
-                            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
-                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
-                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
                             </div>
                           </td>
                         </tr>
                       ))
                     ) : (
-                      groups.map((group) => (
+                      filteredGroups.map((group) => (
                       <tr key={group.id} className={styles.tableRow}>
                         <td className={styles.tableCell}>
                           <div className={styles.groupInfo}>

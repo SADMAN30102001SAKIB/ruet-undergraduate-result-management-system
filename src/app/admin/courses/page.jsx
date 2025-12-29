@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,12 @@ import {
   Trash2,
   Award,
   Trophy,
-  Star,
   Crown,
 } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState([]);
-  const [filteredCourses, setFilteredCourses] = useState([]);
   const { showError, showConfirm, PopupComponent } = usePopup();
   const [loading, setLoading] = useState(true);
   const [filterOptions, setFilterOptions] = useState({
@@ -54,7 +52,7 @@ export default function AdminCourses() {
     }
   }, [router]);
 
-  const filterCourses = useCallback(() => {
+  const filteredCourses = useMemo(() => {
     let filtered = courses;
 
     if (searchTerm) {
@@ -75,7 +73,7 @@ export default function AdminCourses() {
     if (semesterFilter) {
       filtered = filtered.filter((course) => course.semester === semesterFilter);
     }
-    setFilteredCourses(filtered);
+    return filtered;
   }, [courses, searchTerm, departmentFilter, yearFilter, semesterFilter]);
 
   useEffect(() => {
@@ -93,10 +91,6 @@ export default function AdminCourses() {
       console.error("Failed to fetch filter options:", error);
     }
   };
-
-  useEffect(() => {
-    filterCourses();
-  }, [filterCourses]);
 
   const handleDelete = async (id, courseCode) => {
     showConfirm(

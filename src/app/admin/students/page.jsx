@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
 import {
@@ -15,7 +14,6 @@ import {
   Edit,
   Trash2,
   Users,
-  Filter,
   Eye,
   AlertTriangle,
 } from "lucide-react";
@@ -23,7 +21,6 @@ import styles from "./page.module.css";
 
 export default function AdminStudents() {
   const [students, setStudents] = useState([]);
-  const [filteredStudents, setFilteredStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showError, showConfirm, PopupComponent } = usePopup();
   const [filterOptions, setFilterOptions] = useState({
@@ -57,7 +54,7 @@ export default function AdminStudents() {
     }
   };
 
-  const filterStudents = useCallback(() => {
+  const filteredStudents = useMemo(() => {
     let filtered = students;
 
     if (searchTerm) {
@@ -78,12 +75,8 @@ export default function AdminStudents() {
       filtered = filtered.filter((student) => student.current_semester === semesterFilter);
     }
 
-    setFilteredStudents(filtered);
+    return filtered;
   }, [students, searchTerm, departmentFilter, yearFilter, semesterFilter]);
-
-  useEffect(() => {
-    filterStudents();
-  }, [students, searchTerm, departmentFilter, yearFilter, semesterFilter, filterStudents]);
 
   const fetchStudents = async () => {
     try {

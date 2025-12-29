@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -129,20 +129,23 @@ export default function BacklogGroupDetail() {
     );
   };
 
-  const filteredCourses =
-    groupData?.courses.filter((course) => {
-      const matchesSearch =
-        course.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.roll_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.course_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.course_name?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredCourses = useMemo(() => {
+    return (
+      groupData?.courses.filter((course) => {
+        const matchesSearch =
+          course.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.roll_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.course_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          course.course_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesDepartment = !departmentFilter || course.department_code === departmentFilter;
-      const matchesYear = !yearFilter || course.year.toString() === yearFilter;
-      const matchesSemester = !semesterFilter || course.semester === semesterFilter;
+        const matchesDepartment = !departmentFilter || course.department_code === departmentFilter;
+        const matchesYear = !yearFilter || course.year.toString() === yearFilter;
+        const matchesSemester = !semesterFilter || course.semester === semesterFilter;
 
-      return matchesSearch && matchesDepartment && matchesYear && matchesSemester;
-    }) || [];
+        return matchesSearch && matchesDepartment && matchesYear && matchesSemester;
+      }) || []
+    );
+  }, [groupData, searchTerm, departmentFilter, yearFilter, semesterFilter]);
 
   // Get unique values for filters
   const departments = [...new Set(groupData?.courses.map((c) => c.department_code) || [])];
