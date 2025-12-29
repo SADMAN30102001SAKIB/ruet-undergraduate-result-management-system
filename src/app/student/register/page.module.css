@@ -1,12 +1,12 @@
 .container {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(240 253 244), rgb(209 250 229));
-  padding: 2rem 1rem;
 }
 
 .content {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
 /* Header */
@@ -134,24 +134,52 @@
 }
 
 .loadingItem {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  padding: 1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+  padding: 1.5rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .loadingBar {
   height: 1rem;
-  background-color: rgb(229 231 235);
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.1);
   border-radius: 0.25rem;
   margin-bottom: 0.5rem;
 }
 
 .loadingBarShort {
   height: 0.75rem;
-  background-color: rgb(229 231 235);
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.1);
   border-radius: 0.25rem;
   width: 66.666667%;
+}
+
+.skeletonHeader {
+  height: 1.5rem;
+  width: 150px;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.skeletonText {
+  height: 1rem;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 0.25rem;
+}
+
+.skeletonCircle {
+  height: 3rem;
+  width: 3rem;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 9999px;
+  margin: 0 auto 1rem;
 }
 
 .emptyState {
@@ -293,8 +321,7 @@
 
 /* Pulse animation */
 @keyframes pulse {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
   50% {

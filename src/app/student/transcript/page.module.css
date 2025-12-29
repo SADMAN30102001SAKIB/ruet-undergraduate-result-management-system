@@ -1,12 +1,12 @@
 .container {
   min-height: 100vh;
   background: linear-gradient(to bottom right, rgb(239 246 255), rgb(224 231 255));
-  padding: 2rem 1rem;
 }
 
 .content {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
 .loading {
@@ -144,10 +144,6 @@
 }
 
 /* Semester Performance */
-.semesterPerformance {
-  margin-top: 1.5rem;
-}
-
 .semesterTitle {
   font-weight: 600;
   margin-bottom: 1rem;
@@ -416,12 +412,63 @@
 .flexCenter {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 /* Backlog indicator styling */
-.backlogIndicator {
-  font-size: 0.75rem;
-  color: #f59e0b;
-  font-weight: 600;
-  margin-left: 0.25rem;
+
+/* Skeleton Loading */
+.loadingSection {
+  padding: 1rem 0;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.loadingCardSkeleton {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonHeader {
+  height: 2rem;
+  width: 200px;
+  background-color: #e2e8f0;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.skeletonBar {
+  height: 1rem;
+  background-color: #e2e8f0;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeletonBarShort {
+  height: 1rem;
+  background-color: #e2e8f0;
+  border-radius: 0.25rem;
+  width: 60%;
+}
+
+.skeletonText {
+  background-color: #e2e8f0;
+  border-radius: 0.25rem;
+  width: 100%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

@@ -217,64 +217,98 @@ export default function StudentRegister() {
             <div>
               <h1 className={styles.headerTitle}>Course Registration</h1>
               <p className={styles.headerSubtitle}>
-                {profile &&
+                {loading ? (
+                  <span
+                    className={styles.skeletonText}
+                    style={{
+                      display: "inline-block",
+                      width: "180px",
+                      height: "0.875rem",
+                      marginTop: "0.25rem",
+                    }}
+                  ></span>
+                ) : (
+                  profile &&
                   `${profile.current_year}${getYearSuffix(profile.current_year)} Year, ${
                     profile.current_semester.charAt(0).toUpperCase() +
                     profile.current_semester.slice(1)
-                  } Semester`}
+                  } Semester`
+                )}
               </p>
             </div>
           </div>
         </header>
 
         {/* Current Semester Notice */}
-        {profile && (
-          <Card className={`${styles.statusCard} ${styles.cardSpacing}`}>
-            <CardContent>
-              <div className={styles.statusContent}>
-                <AlertCircle className={styles.statusIcon} />
-                <div>
-                  <h3 className={styles.statusTitle}>
-                    Registration Restricted to Current Semester
-                  </h3>
-                  <p className={styles.statusDescription}>
-                    You can only register for courses in your current semester:{" "}
-                    <span className={styles.semiBold}>
-                      Year {profile.current_year},{" "}
-                      {profile.current_semester.charAt(0).toUpperCase() +
-                        profile.current_semester.slice(1)}{" "}
-                      Semester
-                    </span>
-                  </p>
+        {loading ? (
+          <div className={styles.loadingItem} style={{ marginBottom: "1.5rem" }}>
+            <div className={styles.loadingBar} style={{ width: "30%" }}></div>
+            <div className={styles.loadingBar}></div>
+          </div>
+        ) : (
+          profile && (
+            <Card className={`${styles.statusCard} ${styles.cardSpacing}`}>
+              <CardContent>
+                <div className={styles.statusContent}>
+                  <AlertCircle className={styles.statusIcon} />
+                  <div>
+                    <h3 className={styles.statusTitle}>
+                      Registration Restricted to Current Semester
+                    </h3>
+                    <p className={styles.statusDescription}>
+                      You can only register for courses in your current semester:{" "}
+                      <span className={styles.semiBold}>
+                        Year {profile.current_year},{" "}
+                        {profile.current_semester.charAt(0).toUpperCase() +
+                          profile.current_semester.slice(1)}{" "}
+                        Semester
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {/* Registration Summary */}
         <Card className={styles.cardSpacing}>
           <CardHeader>
             <CardTitle className={styles.flexCenter}>
-              <CheckCircle className={`${styles.icon5} mr-2`} style={{ color: "rgb(22 163 74)" }} />
-              Registration Summary
+              {loading ? (
+                <div className={styles.skeletonText} style={{ width: "1.25rem", height: "1.25rem", borderRadius: "50%", marginRight: "0.5rem" }}></div>
+              ) : (
+                <CheckCircle className={`${styles.icon5} mr-2`} style={{ color: "rgb(22 163 74)" }} />
+              )}
+              {loading ? <span className={styles.skeletonText} style={{ width: "160px", height: "1.5rem" }}></span> : "Registration Summary"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={styles.statsGrid}>
-              <div className={styles.statsItem}>
-                <p className={styles.statsValueGreen}>{registeredCourses.length}</p>
-                <p className={styles.statsLabel}>Registered Courses</p>
+            {loading ? (
+              <div className={styles.statsGrid}>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className={styles.statsItem}>
+                    <div className={styles.skeletonText} style={{ width: "40px", height: "2.5rem", margin: "0 auto 0.5rem" }}></div>
+                    <div className={styles.skeletonText} style={{ width: "80px", height: "1rem", margin: "0 auto" }}></div>
+                  </div>
+                ))}
               </div>
-              <div className={styles.statsItem}>
-                <p className={styles.statsValueBlue}>{totalCredits}</p>
-                <p className={styles.statsLabel}>Total Credits</p>
+            ) : (
+              <div className={styles.statsGrid}>
+                <div className={styles.statsItem}>
+                  <p className={styles.statsValueGreen}>{registeredCourses.length}</p>
+                  <p className={styles.statsLabel}>Registered Courses</p>
+                </div>
+                <div className={styles.statsItem}>
+                  <p className={styles.statsValueBlue}>{totalCredits}</p>
+                  <p className={styles.statsLabel}>Total Credits</p>
+                </div>
+                <div className={styles.statsItem}>
+                  <p className={styles.statsValuePurple}>{availableCourses.length}</p>
+                  <p className={styles.statsLabel}>Available Courses</p>
+                </div>
               </div>
-              <div className={styles.statsItem}>
-                <p className={styles.statsValuePurple}>{availableCourses.length}</p>
-                <p className={styles.statsLabel}>Available Courses</p>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -283,21 +317,27 @@ export default function StudentRegister() {
           <Card>
             <CardHeader>
               <CardTitle className={styles.flexCenter}>
-                <CheckCircle
-                  className={`${styles.icon5} mr-2`}
-                  style={{ color: "rgb(22 163 74)" }}
-                />
-                Registered Courses
+                {loading ? (
+                  <div className={styles.skeletonText} style={{ width: "1.25rem", height: "1.25rem", borderRadius: "50%", marginRight: "0.5rem" }}></div>
+                ) : (
+                  <CheckCircle
+                    className={`${styles.icon5} mr-2`}
+                    style={{ color: "rgb(22 163 74)" }}
+                  />
+                )}
+                {loading ? <span className={styles.skeletonText} style={{ width: "150px", height: "1.5rem" }}></span> : "Registered Courses"}
               </CardTitle>
-              <CardDescription>Courses you are currently enrolled in</CardDescription>
+              <CardDescription>
+                {loading ? <span className={styles.skeletonText} style={{ width: "200px", height: "1rem", marginTop: "0.25rem" }}></span> : "Courses you are currently enrolled in"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <div className={styles.loadingContainer}>
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className={styles.loadingItem}>
-                      <div className={styles.loadingBar}></div>
-                      <div className={styles.loadingBarShort}></div>
+                      <div className={styles.skeletonHeader} style={{ width: "100px" }}></div>
+                      <div className={styles.skeletonText}></div>
                     </div>
                   ))}
                 </div>
@@ -317,11 +357,6 @@ export default function StudentRegister() {
                         <div className={styles.courseInfo}>
                           <h3 className={styles.courseCode}>{course.course_code}</h3>
                           <p className={styles.courseName}>{course.course_name}</p>
-                          <div className={styles.courseDetails}>
-                            <span>Credits: {course.credits}</span>
-                            <span>Year: {course.year}</span>
-                            <span>Semester: {course.semester}</span>
-                          </div>
                         </div>
                         <div className={styles.courseStatus}>
                           <CheckCircle className={styles.statusIcon} />
@@ -339,18 +374,25 @@ export default function StudentRegister() {
           <Card>
             <CardHeader>
               <CardTitle className={styles.flexCenter}>
-                <BookOpen className={`${styles.icon5} mr-2`} style={{ color: "rgb(37 99 235)" }} />
-                Available Courses
+                {loading ? (
+                  <div className={styles.skeletonText} style={{ width: "1.25rem", height: "1.25rem", borderRadius: "50%", marginRight: "0.5rem" }}></div>
+                ) : (
+                  <BookOpen className={`${styles.icon5} mr-2`} style={{ color: "rgb(37 99 235)" }} />
+                )}
+                {loading ? <span className={styles.skeletonText} style={{ width: "150px", height: "1.5rem" }}></span> : "Available Courses"}
               </CardTitle>
-              <CardDescription>Courses available for your current semester</CardDescription>
+              <CardDescription>
+                {loading ? <span className={styles.skeletonText} style={{ width: "220px", height: "1rem", marginTop: "0.25rem" }}></span> : "Courses available for your current semester"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
                 <div className={styles.loadingContainer}>
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className={styles.loadingItem}>
-                      <div className={styles.loadingBar}></div>
-                      <div className={styles.loadingBarShort}></div>
+                      <div className={styles.skeletonHeader}></div>
+                      <div className={styles.skeletonText}></div>
+                      <div className={styles.skeletonText} style={{ width: "60%" }}></div>
                     </div>
                   ))}
                 </div>
@@ -399,21 +441,28 @@ export default function StudentRegister() {
         <Card className={styles.cardSpacingTop}>
           <CardHeader>
             <CardTitle className={styles.flexCenter}>
-              <AlertTriangle
-                className={`${styles.icon5} mr-2`}
-                style={{ color: "rgb(234 88 12)" }}
-              />
-              Backlog Exam Registration
+              {loading ? (
+                <div className={styles.skeletonText} style={{ width: "1.25rem", height: "1.25rem", borderRadius: "50%", marginRight: "0.5rem" }}></div>
+              ) : (
+                <AlertTriangle
+                  className={`${styles.icon5} mr-2`}
+                  style={{ color: "rgb(234 88 12)" }}
+                />
+              )}
+              {loading ? <span className={styles.skeletonText} style={{ width: "220px", height: "1.5rem" }}></span> : "Backlog Exam Registration"}
             </CardTitle>
-            <CardDescription>Register for failed courses (maximum 5 per group)</CardDescription>
+            <CardDescription>
+              {loading ? <span className={styles.skeletonText} style={{ width: "260px", height: "1rem", marginTop: "0.25rem" }}></span> : "Register for failed courses (maximum 5)"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className={styles.loadingContainer}>
                 {Array.from({ length: 2 }).map((_, i) => (
                   <div key={i} className={styles.loadingItem}>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBarShort}></div>
+                    <div className={styles.skeletonHeader}></div>
+                    <div className={styles.skeletonText}></div>
+                    <div className={styles.skeletonText} style={{ width: "70%" }}></div>
                   </div>
                 ))}
               </div>
@@ -522,7 +571,7 @@ export default function StudentRegister() {
               <li>Contact your academic advisor if you have questions about course selection</li>
               <li>Results will be published after course completion and evaluation</li>
               <li>
-                You can register for up to 5 backlog courses per group during backlog exam periods
+                You can register for up to 5 backlog courses during backlog exam periods
               </li>
               <li>Backlog registration is only available for courses you have previously failed</li>
               <li>Backlog exam schedules will be announced separately by the administration</li>

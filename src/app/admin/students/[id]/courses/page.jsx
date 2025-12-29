@@ -333,7 +333,9 @@ export default function StudentCoursesManagement({ params }) {
                                       </span>
                                     </td>
                                     <td className={styles.tableCell}>{course.course_name}</td>
-                                    <td className={styles.tableCellCenter}>{course.credits}</td>
+                                    <td className={styles.tableCellCenter}>
+                                      {Number(course.credits).toFixed(2)}
+                                    </td>
                                     <td className={styles.tableCellCenter}>
                                       {course.has_result ? (
                                         <span
@@ -447,7 +449,9 @@ export default function StudentCoursesManagement({ params }) {
                           <span className={styles.courseCode}>{course.course_code}</span>
                         </td>
                         <td className={styles.tableCell}>{course.course_name}</td>
-                        <td className={styles.tableCellCenter}>{course.credits}</td>
+                        <td className={styles.tableCellCenter}>
+                          {Number(course.credits).toFixed(2)}
+                        </td>
                         <td className={styles.tableCellCenter}>
                           <Button
                             size="sm"

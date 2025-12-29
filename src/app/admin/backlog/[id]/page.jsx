@@ -171,88 +171,116 @@ export default function BacklogGroupDetail() {
 
   const handleGeneratePDF = async (examDates) => {
     try {
-      // Import jsPDF dynamically
       const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF();
-
-      // Title
-      doc.setFontSize(20);
-      doc.text(`${groupData.group.name} - Exam Routine`, 20, 30);
-
-      // Schedule info
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
-      doc.text(
-        `Total Courses: ${Object.keys(examSchedule.examDays).reduce(
-          (total, day) => total + examSchedule.examDays[day].length,
-          0
-        )}`,
-        20,
-        55
-      );
-
-      // Table headers
-      const headers = ["Course", "Date", "Roll Numbers"];
-      let yPosition = 75;
-
-      // Draw table header
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      headers.forEach((header, index) => {
-        doc.text(header, 20 + index * 60, yPosition);
+      const doc = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4"
       });
 
-      // Draw header line
-      doc.line(20, yPosition + 2, 180, yPosition + 2);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+
+      // --- HEADER ---
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("RAJSHAHI UNIVERSITY OF ENGINEERING & TECHNOLOGY", pageWidth / 2, 25, { align: "center" });
+      
+      doc.setFontSize(14);
+      doc.text("OFFICE OF THE CONTROLLER OF EXAMINATIONS", pageWidth / 2, 33, { align: "center" });
+      
+      doc.setLineWidth(0.8);
+      doc.line(margin, 38, pageWidth - margin, 38);
+      
+      doc.setFontSize(12);
+      doc.text(`BACKLOG ROUTINE: ${groupData.group.name.toUpperCase()}`, pageWidth / 2, 48, { align: "center" });
+      
+      // --- INFO SECTION ---
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(`Generated Date: ${new Date().toLocaleDateString()}`, margin, 58);
+      
+      const registeredCoursesCount = groupData.courses.filter(c => c.is_registered).length;
+      doc.text(`Total Registered Courses: ${registeredCoursesCount}`, pageWidth - margin, 58, { align: "right" });
+
+      // --- TABLE HEADER ---
+      let yPosition = 68;
+      const colWidths = [35, 85, 30, 30]; // Code, Title, Date, Students
+      const colStarts = [margin, margin + 35, margin + 120, margin + 150];
+      
+      doc.setFillColor(245, 245, 245);
+      doc.rect(margin, yPosition, pageWidth - (margin * 2), 10, "F");
+      doc.setDrawColor(200); // Light grey borders to match body rows
+      doc.setLineWidth(0.2);
+      doc.rect(margin, yPosition, pageWidth - (margin * 2), 10, "D");
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text("COURSE CODE", colStarts[0] + 2, yPosition + 6.5);
+      doc.text("COURSE TITLE", colStarts[1] + 2, yPosition + 6.5);
+      doc.text("EXAM DATE", colStarts[2] + 2, yPosition + 6.5);
+      doc.text("ROLLS", colStarts[3] + 2, yPosition + 6.5);
 
       yPosition += 10;
       doc.setFont("helvetica", "normal");
 
-      // Generate routine data (only for registered courses)
+      // --- DATA ---
       const { generateExamRoutineData } = await import("@/lib/utils");
       const registeredCourses = groupData.courses.filter((course) => course.is_registered);
       const routineData = generateExamRoutineData(examSchedule, examDates, registeredCourses);
 
-      // Add table rows
-      routineData.forEach((item) => {
-        if (yPosition > 270) {
-          // New page if needed
+      routineData.forEach((item, index) => {
+        // Calculate dynamic height for roll numbers
+        const rollLines = doc.splitTextToSize(item.rollNumbers, colWidths[3] - 4);
+        const rowHeight = Math.max(10, rollLines.length * 5 + 2);
+
+        if (yPosition + rowHeight > 260) {
           doc.addPage();
           yPosition = 30;
+          // Re-draw header on new page if desired (optional)
         }
 
-        // Course
-        doc.text(item.courseCode, 20, yPosition);
+        // Zebra striping
+        if (index % 2 === 1) {
+          doc.setFillColor(252, 252, 252);
+          doc.rect(margin, yPosition, pageWidth - (margin * 2), rowHeight, "F");
+        }
 
-        // Date
-        doc.text(new Date(item.date).toLocaleDateString(), 80, yPosition);
+        // Draw row borders
+        doc.setDrawColor(200);
+        doc.rect(margin, yPosition, pageWidth - (margin * 2), rowHeight, "D");
 
-        // Roll Numbers (may wrap to multiple lines)
-        const rollNumbers = item.rollNumbers;
-        const maxWidth = 40;
-        const lines = doc.splitTextToSize(rollNumbers, maxWidth);
-        doc.text(lines, 140, yPosition);
+        doc.setFontSize(9);
+        doc.text(item.courseCode, colStarts[0] + 2, yPosition + 6.5);
+        
+        // Wrap Course Name
+        const titleLines = doc.splitTextToSize(item.courseName, colWidths[1] - 4);
+        doc.text(titleLines, colStarts[1] + 2, yPosition + 6.5);
+        
+        doc.text(new Date(item.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }), colStarts[2] + 2, yPosition + 6.5);
+        
+        doc.text(rollLines, colStarts[3] + 2, yPosition + 6.5);
 
-        yPosition += Math.max(10, lines.length * 5);
+        yPosition += rowHeight;
       });
 
-      // Save the PDF
-      doc.save(`${groupData.group.name.replace(/[^a-zA-Z0-9]/g, "_")}_exam_routine.pdf`);
+      // --- FOOTER ---
+      const footerY = 270;
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.line(pageWidth - 80, footerY, pageWidth - margin, footerY);
+      doc.setFont("helvetica", "bold");
+      doc.text("Controller of Examinations", pageWidth - 50, footerY + 5, { align: "center" });
+
+      doc.save(`${groupData.group.name.replace(/[^a-zA-Z0-9]/g, "_")}_routine.pdf`);
     } catch (error) {
       console.error("Failed to generate PDF:", error);
       showError("PDF Generation Failed", "An error occurred while generating the PDF");
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loadingText}>Loading group details...</div>
-      </div>
-    );
-  }
 
-  if (!groupData) {
+  if (!groupData && !loading) {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
@@ -280,83 +308,100 @@ export default function BacklogGroupDetail() {
             </Link>
             <GraduationCap className={styles.headerIcon} />
             <div>
-              <h1 className={styles.headerTitle}>{groupData.group.name}</h1>
+              <h1 className={styles.headerTitle}>
+                {loading ? (
+                  <span className={styles.skeletonTableRow} style={{ width: "220px", height: "1.5rem" }}></span>
+                ) : (
+                  groupData?.group?.name
+                )}
+              </h1>
               <p className={styles.headerSubtitle}>
-                Manage backlog exam registrations • {filteredCourses.length} courses
+                {loading ? (
+                  <span className={styles.skeletonTableRow} style={{ width: "180px", marginTop: "0.25rem" }}></span>
+                ) : (
+                  <>Manage backlog exam registrations • {filteredCourses.length} courses</>
+                )}
               </p>
             </div>
           </div>
           <div className={styles.headerStatus}>
-            <span
-              className={`${styles.statusBadge} ${
-                groupData.group.is_open ? styles.statusOpen : styles.statusClosed
-              }`}
-            >
-              Registration {groupData.group.is_open ? "Open" : "Closed"}
-            </span>
+            {loading ? (
+              <span className={styles.skeletonTableRow} style={{ width: "120px", height: "2rem", borderRadius: "2rem" }}></span>
+            ) : (
+              <span
+                className={`${styles.statusBadge} ${
+                  groupData?.group?.is_open ? styles.statusOpen : styles.statusClosed
+                }`}
+              >
+                Registration {groupData?.group?.is_open ? "Open" : "Closed"}
+              </span>
+            )}
           </div>
         </header>
 
-        {/* Filters */}
-        <div className={styles.filters}>
-          <div className={styles.searchContainer}>
-            <div className="relative">
-              <Search className={styles.searchIcon} />
-              <Input
-                placeholder="Search by student name, roll number, or course..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={styles.searchInput}
-              />
+        {/* Actions Bar */}
+        <div className={styles.actionsBar}>
+          <div className={styles.filtersSection}>
+            <div className={styles.searchContainer}>
+              <div className="relative">
+                <Search className={styles.searchIcon} />
+                <Input
+                  placeholder="Search by student name, roll number, or course..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={styles.searchInput}
+                />
+              </div>
+            </div>
+
+            <div className={styles.filterControls}>
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className={styles.select}
+              >
+                <option value="">All Departments</option>
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={yearFilter}
+                onChange={(e) => setYearFilter(e.target.value)}
+                className={styles.select}
+              >
+                <option value="">All Years</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year === 1 ? "1st" : year === 2 ? "2nd" : year === 3 ? "3rd" : `${year}th`} Year
+                  </option>
+                ))}
+              </select>
+              <select
+                value={semesterFilter}
+                onChange={(e) => setSemesterFilter(e.target.value)}
+                className={styles.select}
+              >
+                <option value="">All Semesters</option>
+                {semesters.map((semester) => (
+                  <option key={semester} value={semester}>
+                    {semester.charAt(0).toUpperCase() + semester.slice(1)}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <div className={styles.filterControls}>
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className={styles.select}
-            >
-              <option value="">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-            <select
-              value={yearFilter}
-              onChange={(e) => setYearFilter(e.target.value)}
-              className={styles.select}
-            >
-              <option value="">All Years</option>
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year === 1 ? "1st" : year === 2 ? "2nd" : year === 3 ? "3rd" : `${year}th`} Year
-                </option>
-              ))}
-            </select>
-            <select
-              value={semesterFilter}
-              onChange={(e) => setSemesterFilter(e.target.value)}
-              className={styles.select}
-            >
-              <option value="">All Semesters</option>
-              {semesters.map((semester) => (
-                <option key={semester} value={semester}>
-                  {semester.charAt(0).toUpperCase() + semester.slice(1)}
-                </option>
-              ))}
-            </select>
-            <Button
-              onClick={handleGenerateRoutine}
-              className={styles.routineButton}
-              disabled={filteredCourses.length === 0}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Create Routine PDF
-            </Button>
-          </div>
+          <Button
+            onClick={handleGenerateRoutine}
+            className={styles.routineButton}
+            disabled={loading || filteredCourses.length === 0}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Create Routine
+          </Button>
         </div>
 
         {/* Courses Table */}
@@ -364,12 +409,18 @@ export default function BacklogGroupDetail() {
           <CardHeader>
             <CardTitle className={styles.cardTitle}>
               <Eye className={styles.cardIcon} />
-              Backlog Courses ({filteredCourses.length})
+              Backlog Courses {loading ? (
+                <span className={styles.skeletonTableRow} style={{ width: '40px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
+              ) : (
+                <span>({filteredCourses.length})</span>
+              )}
             </CardTitle>
-            <CardDescription>Manage student registrations for backlog exams</CardDescription>
+            <CardDescription>
+              Manage student registrations for backlog exams
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {filteredCourses.length === 0 ? (
+            {filteredCourses.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <Eye className={styles.emptyIcon} />
                 <p className={styles.emptyText}>No courses found</p>
@@ -388,7 +439,24 @@ export default function BacklogGroupDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCourses.map((course) => (
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className={styles.tableRow}>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "40px", margin: "0 auto" }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "30px", margin: "0 auto" }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "60px", margin: "0 auto" }}></div></td>
+                          <td className={styles.tableCellCenter}>
+                            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      filteredCourses.map((course) => (
                       <tr
                         key={`${course.student_id}-${course.course_id}`}
                         className={styles.tableRow}
@@ -468,7 +536,8 @@ export default function BacklogGroupDetail() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    )}
                   </tbody>
                 </table>
               </div>

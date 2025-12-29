@@ -6,6 +6,7 @@ import {
   getEffectiveStudentResults,
   getStudentTotalCredits,
 } from "@/lib/data";
+import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -17,16 +18,28 @@ export async function GET() {
 
     const resultsData = await getStudentResultsWithBacklog(user.id);
     const cgpaData = await getStudentCGPA(user.id);
-    const effectiveResults = await getEffectiveStudentResults(user.id); // Combine regular and backlog results into a single array for transcript
-    const allResults = [...resultsData.regularResults, ...resultsData.backlogResults];
-    const totalCredits = await getStudentTotalCredits(user.id);
+    const effectiveResults = await getEffectiveStudentResults(user.id);
+
+    // Helper to strip marks and add grade info
+    const sanitizeResult = (result) => {
+      const { marks, ...rest } = result;
+      const gradeInfo = result.is_backlog 
+        ? getBacklogGradeFromMarks(marks) 
+        : getGradeFromMarks(marks);
+      return {
+        ...rest,
+        grade: gradeInfo.grade,
+        gradePoint: gradeInfo.gradePoint,
+      };
+    };
+
     const responseData = {
-      results: allResults,
+      results: [...resultsData.regularResults, ...resultsData.backlogResults].map(sanitizeResult),
       cgpa: cgpaData,
-      regularResults: resultsData.regularResults,
-      backlogResults: resultsData.backlogResults,
-      effectiveResults: effectiveResults,
-      totalCredits: totalCredits,
+      regularResults: resultsData.regularResults.map(sanitizeResult),
+      backlogResults: resultsData.backlogResults.map(sanitizeResult),
+      effectiveResults: effectiveResults.map(sanitizeResult),
+      totalCredits: await getStudentTotalCredits(user.id),
     };
 
     return NextResponse.json(responseData);

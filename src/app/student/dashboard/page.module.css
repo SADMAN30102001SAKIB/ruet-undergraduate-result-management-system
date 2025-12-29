@@ -6,7 +6,7 @@
 .content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1.5rem;
 }
 
 .header {
@@ -130,24 +130,56 @@
 }
 
 .loadingCard {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  animation: pulse 1.5s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .loadingCardContent {
-  padding: 1.5rem !important;
+  padding: 0 !important;
 }
 
 .loadingBar {
   height: 1rem;
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.1);
   border-radius: 0.25rem;
   margin-bottom: 0.5rem;
-  background-color: rgb(229 231 235);
 }
 
 .loadingBarLarge {
   height: 2rem;
+  background-color: var(--muted);
+  background-color: rgb(0 0 0 / 0.1);
   border-radius: 0.25rem;
-  background-color: rgb(229 231 235);
+}
+
+.skeletonHeader {
+  height: 1.5rem;
+  width: 150px;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.skeletonText {
+  height: 1rem;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeletonCircle {
+  height: 3rem;
+  width: 3rem;
+  background-color: rgb(0 0 0 / 0.1);
+  border-radius: 9999px;
+  margin: 0 auto 1rem;
 }
 
 .statCard {
@@ -280,6 +312,15 @@
 
 .actionIconPurple {
   color: rgb(147 51 234);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .actionTitle {

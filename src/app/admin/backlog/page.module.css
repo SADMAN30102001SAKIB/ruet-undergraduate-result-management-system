@@ -54,7 +54,7 @@
 }
 
 .searchInput {
-  padding-left: 2.5rem;
+  padding-left: 2.5rem !important;
 }
 
 .loading {
@@ -67,6 +67,30 @@
 .loadingText {
   font-size: 1.125rem;
   color: var(--muted-foreground);
+}
+
+/* Skeleton Styles */
+.skeletonTableRow {
+  display: block;
+  height: 1rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .cardTitle {

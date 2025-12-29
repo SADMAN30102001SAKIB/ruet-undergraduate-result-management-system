@@ -21,11 +21,12 @@ A comprehensive web application for managing records, course enrollment, and aca
 
 ## Technology Stack
 
-- **Frontend**: Next.js 15 with JavaScript and App Router
-- **Database**: PostgreSQL (Neon) with pg library
-- **Styling**: CSS Modules with modern styling
-- **Authentication**: Session-based auth with secure cookies
-- **UI Components**: Custom components following shadcn/ui patterns
+- **Frontend**: Next.js 15 (App Router) - Focused on native React features.
+- **Database**: PostgreSQL (Neon) with pg library for connection pooling- Choice of RDBMS over NoSQL for strict data integrity.
+- **Migrations**: Manual migration layer (`src/lib/migrations.js`) to handle schema evolution.
+- **Styling**: CSS Modules - Vanilla CSS approach for precision without Tailwind overhead.
+- **State**: Native React Hooks (`useState`, `useContext`) and Server-side State.
+- **Authentication**: Session-based auth with secure cookies and middleware.
 
 ## Getting Started
 
@@ -47,7 +48,7 @@ cd ruet-undergraduate-result-management-system
 2. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 3. Set up environment variables:
@@ -63,7 +64,7 @@ For Neon PostgreSQL, get your connection string from your Neon dashboard.
 4. Start the development server:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
@@ -90,11 +91,12 @@ The application uses **PostgreSQL** with the following main tables:
 - **student_courses**: Student course enrollments
 - **results**: Academic results and grades
 
-### Database Features
+### Database Engineering & Lifecycle
 
-- **Automatic Schema Creation**: Tables and relationships are created automatically
-- **Connection Pooling**: Optimized database connections for scalability
-- **Data Integrity**: Foreign key constraints and validation rules
+- **Relational Integrity**: Unlike NoSQL/MongoDB, this app uses PostgreSQL to enforce strict relationships (e.g., Results cannot exist without a Course).
+- **Evolutionary Schema (Manual Migrations)**: Because SQL is strict, we maintain a [migrations.js](file:///c:/Users/Asus/Desktop/ruet-undergraduate-result-management-system/src/lib/migrations.js) layer. This handles schema updates that tools like Prisma or Mongoose would usually automate, ensuring the database evolves safely as we add features.
+- **Neon Optimized Pooling**: Configured with a `max: 8` limit to solve the **"Multi-Instance Problem"** in serverless environments. Unlike a single traditional server, Vercel spins up many concurrent "Lambdas". A low `max` per instance prevents a traffic spike from opening thousands of cumulative connections (e.g., 20 instances x 8 vs 100) which would crash the database. This "sweet spot" handles hundreds of requests per second via low query latency (10-50ms) while staying safely within Neon's connection limits.
+- **Automatic Initialization**: The database is automatically initialized with the required tables and relationships on the first run.
 
 ## Project Structure
 
@@ -137,26 +139,26 @@ src/
 - Year and semester progression tracking
 - Registration validation and constraints
 
+### State Management Philosophy
+
+- **Zero Global State Libraries**: This project deliberately avoids Redux, Zustand, or MobX.
+- **Why?**: Undergraduate management is primarily a **CRUD** application. The "Source of Truth" is the database. We use native `useState` for local UI interactions and Next.js data fetching for "Server State."
+- **Efficiency**: This drastically reduces the bundle size and prevents "State Desync" bugs where the UI shows something different from the database.
+
 ### Modern UI/UX
 
-- Responsive design with CSS Modules
-- Form validation and error handling
+- **CSS Modules**: We chose CSS Modules over Tailwind to keep the HTML clean and maintain a "Pure CSS" design system. Each component is self-contained.
+- **Micro-animations**: Subtle transitions using pure CSS for a premium feel.
 
 ## Development
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run start` - Start production server
+- `pnpm run lint` - Run ESLint
 
-### Database Management
-
-The PostgreSQL database is automatically initialized with the required schema on first run. The system includes:
-
-- **Automatic table creation** with proper relationships
-- **Connection pooling** for optimal performance
 
 ### Environment Configuration
 
@@ -165,14 +167,6 @@ Required environment variables:
 ```env
 POSTGRES_URL="postgresql://username:password@host:port/database"
 ```
-
-### Adding New Features
-
-1. Create database schema changes in `lib/postgres.js`
-2. Add data access functions in `lib/data.js`
-3. Create API routes in `app/api/`
-4. Build UI components and pages
-5. Update middleware for route protection if needed
 
 ## Deployment
 
@@ -189,24 +183,16 @@ POSTGRES_URL="your-production-postgresql-url"
 3. Build the application:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 4. Start the production server:
 
 ```bash
-npm start
+pnpm start
 ```
 
 The application can be deployed to platforms like Vercel, Netlify, Railway, or any Node.js hosting service that supports PostgreSQL connections.
-
-### Verification
-
-After deployment, run the verification script to ensure all APIs are working:
-
-```bash
-node comprehensive-verification.mjs
-```
 
 ## Contributing
 

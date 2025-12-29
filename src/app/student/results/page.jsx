@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import { GraduationCap, ArrowLeft, Trophy, TrendingUp, FileText, Award } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -19,9 +18,14 @@ export default function StudentResults() {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchResults();
-      await fetchCGPAData();
-      await fetchRegisteredCourses();
+      setLoading(true);
+      try {
+        await Promise.all([fetchResults(), fetchCGPAData(), fetchRegisteredCourses()]);
+      } catch (error) {
+        console.error("Error fetching all data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
@@ -37,8 +41,6 @@ export default function StudentResults() {
       }
     } catch (error) {
       console.error("Failed to fetch results:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -155,124 +157,145 @@ export default function StudentResults() {
 
         {/* CGPA Overview */}
         <div className={styles.statsGrid}>
-          <Card>
-            <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statTitle}>
-                <Trophy className={`${styles.statIcon} ${styles.statIconYellow}`} />
-                CGPA
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.statValue}>{cgpaData?.cgpa.toFixed(2) || "0.00"}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statTitle}>
-                <TrendingUp className={`${styles.statIcon} ${styles.statIconBlue}`} />
-                Current SGPA
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.statValue}>
-                {cgpaData?.sgpas && cgpaData.sgpas.length > 0
-                  ? (() => {
-                      // Sort SGPAs by year and semester to find the chronologically latest one
-                      const sortedSGPAs = [...cgpaData.sgpas].sort((a, b) => {
-                        if (a.year !== b.year) return b.year - a.year; // Latest year first
-                        // For same year, even semester comes after odd semester
-                        if (a.semester === b.semester) return 0;
-                        return a.semester === "even" ? -1 : 1; // even semester is later than odd
-                      });
-                      return sortedSGPAs[0].sgpa.toFixed(2);
-                    })()
-                  : "0.00"}
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={styles.loadingCardSkeleton}>
+                <div className={styles.skeletonCircle}></div>
+                <div className={styles.skeletonText} style={{ width: "60%", margin: "0 auto" }}></div>
+                <div className={styles.skeletonText} style={{ width: "40%", margin: "0 auto" }}></div>
               </div>
-              <div className={styles.statSubtext}>Latest Semester</div>
-            </CardContent>
-          </Card>
+            ))
+          ) : (
+            <>
+              <Card>
+                <CardHeader className={styles.statCardHeader}>
+                  <CardTitle className={styles.statTitle}>
+                    <Trophy className={`${styles.statIcon} ${styles.statIconYellow}`} />
+                    CGPA
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.statValue}>{cgpaData?.cgpa.toFixed(2) || "0.00"}</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statTitle}>
-                <Award className={`${styles.statIcon} ${styles.statIconPurple}`} />
-                Credits Earned
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.statValue}>{cgpaData?.completedCredits || 0}</div>
-              <div className={styles.statSubtext}>Total: {cgpaData?.totalCredits || 0}</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className={styles.statCardHeader}>
+                  <CardTitle className={styles.statTitle}>
+                    <TrendingUp className={`${styles.statIcon} ${styles.statIconBlue}`} />
+                    Current SGPA
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.statValue}>
+                    {cgpaData?.sgpas && cgpaData.sgpas.length > 0
+                      ? (() => {
+                          // Sort SGPAs by year and semester to find the chronologically latest one
+                          const sortedSGPAs = [...cgpaData.sgpas].sort((a, b) => {
+                            if (a.year !== b.year) return b.year - a.year; // Latest year first
+                            // For same year, even semester comes after odd semester
+                            if (a.semester === b.semester) return 0;
+                            return a.semester === "even" ? -1 : 1; // even semester is later than odd
+                          });
+                          return sortedSGPAs[0].sgpa.toFixed(2);
+                        })()
+                      : "0.00"}
+                  </div>
+                  <div className={styles.statSubtext}>Latest Semester</div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader className={styles.statCardHeader}>
-              <CardTitle className={styles.statTitle}>
-                <FileText className={`${styles.statIcon} ${styles.statIconGreen}`} />
-                Published Results
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.statValue}>{regularResults.length}</div>
-              <div className={styles.statSubtext}>Course Results</div>
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader className={styles.statCardHeader}>
+                  <CardTitle className={styles.statTitle}>
+                    <Award className={`${styles.statIcon} ${styles.statIconPurple}`} />
+                    Credits Earned
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.statValue}>{(cgpaData?.completedCredits || 0).toFixed(2)}</div>
+                  <div className={styles.statSubtext}>Total: {(cgpaData?.totalCredits || 0).toFixed(2)}</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className={styles.statCardHeader}>
+                  <CardTitle className={styles.statTitle}>
+                    <FileText className={`${styles.statIcon} ${styles.statIconGreen}`} />
+                    Published Results
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.statValue}>{regularResults.length}</div>
+                  <div className={styles.statSubtext}>Course Results</div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* SGPA Trend */}
-        {cgpaData?.sgpas && cgpaData.sgpas.length > 0 && (
-          <Card className={styles.sgpaTrendCard}>
-            <CardHeader>
-              <CardTitle className={styles.sgpaTrendTitle}>
-                <TrendingUp className={styles.sgpaTrendIcon} />
-                Semester-wise Performance
-              </CardTitle>
-              <CardDescription>Your SGPA trend across semesters</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.sgpaGrid}>
-                {[...cgpaData.sgpas]
-                  .sort((a, b) => {
-                    // Sort by year first (ascending)
-                    if (a.year !== b.year) return a.year - b.year;
-                    // For same year, Odd comes before Even
-                    if (a.semester.toLowerCase() === "odd" && b.semester.toLowerCase() === "even")
-                      return -1;
-                    if (a.semester.toLowerCase() === "even" && b.semester.toLowerCase() === "odd")
-                      return 1;
-                    return 0;
-                  })
-                  .map((semester, index) => (
-                    <div key={index} className={styles.sgpaCard}>
-                      <div className={styles.sgpaSemester}>
-                        Year {semester.year} - {semester.semester}
+        {loading ? (
+          <div className={styles.loadingCardSkeleton} style={{ marginBottom: "2rem" }}>
+            <div className={styles.skeletonHeader}></div>
+            <div className={styles.sgpaGrid}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className={styles.skeletonText} style={{ height: "4rem" }}></div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          cgpaData?.sgpas && cgpaData.sgpas.length > 0 && (
+            <Card className={styles.sgpaTrendCard}>
+              <CardHeader>
+                <CardTitle className={styles.sgpaTrendTitle}>
+                  <TrendingUp className={styles.sgpaTrendIcon} />
+                  Semester-wise Performance
+                </CardTitle>
+                <CardDescription>Your SGPA trend across semesters</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className={styles.sgpaGrid}>
+                  {[...cgpaData.sgpas]
+                    .sort((a, b) => {
+                      // Sort by year first (ascending)
+                      if (a.year !== b.year) return a.year - b.year;
+                      // For same year, Odd comes before Even
+                      if (a.semester.toLowerCase() === "odd" && b.semester.toLowerCase() === "even")
+                        return -1;
+                      if (a.semester.toLowerCase() === "even" && b.semester.toLowerCase() === "odd")
+                        return 1;
+                      return 0;
+                    })
+                    .map((semester, index) => (
+                      <div key={index} className={styles.sgpaCard}>
+                        <div className={styles.sgpaSemester}>
+                          Year {semester.year} - {semester.semester}
+                        </div>
+                        <div className={styles.sgpaValue}>{semester.sgpa.toFixed(2)}</div>
+                        <div className={`${styles.sgpaBadge} ${getGradeBadgeColor(semester.sgpa)}`}>
+                          {getGradeFromGradePoint(semester.sgpa)}
+                        </div>
                       </div>
-                      <div className={styles.sgpaValue}>{semester.sgpa.toFixed(2)}</div>
-                      <div className={`${styles.sgpaBadge} ${getGradeBadgeColor(semester.sgpa)}`}>
-                        {getGradeFromGradePoint(semester.sgpa)}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {/* Results by Semester */}
         {loading ? (
-          <Card>
-            <CardContent className={styles.loadingSection}>
-              <div className={styles.loadingContainer}>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className={styles.loadingItem}>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBarShort}></div>
-                  </div>
-                ))}
+          <div className={styles.loadingContainer}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className={styles.loadingCardSkeleton}>
+                <div className={styles.skeletonHeader}></div>
+                <div className={styles.skeletonText}></div>
+                <div className={styles.skeletonText} style={{ width: "80%" }}></div>
+                <div className={styles.skeletonText} style={{ width: "60%" }}></div>
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         ) : regularResults.length === 0 ? (
           <Card>
             <CardContent className={styles.noResultsSection}>
@@ -339,29 +362,19 @@ export default function StudentResults() {
                               <tr key={result.id} className={styles.tableRow}>
                                 <td className={styles.tableCellCode}>{result.course_code}</td>
                                 <td className={styles.tableCell}>{result.course_name}</td>
-                                <td className={styles.tableCellCenter}>{result.credits}</td>
+                                <td className={styles.tableCellCenter}>{result.credits.toFixed(2)}</td>
                                 <td className={styles.tableCellCenter}>
-                                  {(() => {
-                                    const gradeInfo = result.is_backlog
-                                      ? getBacklogGradeFromMarks(result.marks)
-                                      : getGradeFromMarks(result.marks);
-                                    return (
-                                      <span
-                                        className={`${styles.gradeBadge} ${getGradeBadgeColor(
-                                          gradeInfo.gradePoint
-                                        )}`}
-                                      >
-                                        {gradeInfo.grade}
-                                      </span>
-                                    );
-                                  })()}
+                                  <span
+                                    className={`${styles.gradeBadge} ${getGradeBadgeColor(
+                                      result.gradePoint
+                                    )}`}
+                                  >
+                                    {result.grade}
+                                  </span>
                                 </td>
                                 <td className={styles.tableCellCenter}>
                                   <span className={styles.gradePoint}>
-                                    {(result.is_backlog
-                                      ? getBacklogGradeFromMarks(result.marks)
-                                      : getGradeFromMarks(result.marks)
-                                    ).gradePoint.toFixed(2)}
+                                    {result.gradePoint.toFixed(2)}
                                   </span>
                                 </td>
                               </tr>
@@ -378,16 +391,7 @@ export default function StudentResults() {
                             <span className={styles.summaryValue}>
                               {(() => {
                                 const earnedCredits = semesterResults
-                                  .filter((regularResult) => {
-                                    // Check if this course is passed (regular >=40 OR backlog >=40)
-                                    const hasRegularPass = regularResult.marks >= 40;
-                                    const hasBacklogPass = backlogResults.some(
-                                      (backlogResult) =>
-                                        backlogResult.course_id === regularResult.course_id &&
-                                        backlogResult.marks >= 40
-                                    );
-                                    return hasRegularPass || hasBacklogPass;
-                                  })
+                                  .filter((r) => r.gradePoint > 0)
                                   .reduce((sum, r) => sum + r.credits, 0);
                                 const totalCredits = (
                                   registeredCoursesBySemester[semester] || []
@@ -425,30 +429,23 @@ export default function StudentResults() {
                                     <tr key={result.id} className={styles.backlogTableRow}>
                                       <td className={styles.tableCellCode}>{result.course_code}</td>
                                       <td className={styles.tableCell}>{result.course_name}</td>
-                                      <td className={styles.tableCellCenter}>{result.credits}</td>
+                                      <td className={styles.tableCellCenter}>{result.credits.toFixed(2)}</td>
                                       <td className={styles.tableCellCenter}>
-                                        {(() => {
-                                          const gradeInfo = getBacklogGradeFromMarks(result.marks);
-                                          return (
-                                            <span
-                                              className={`${styles.gradeBadge} ${getGradeBadgeColor(
-                                                gradeInfo.gradePoint
-                                              )}`}
-                                            >
-                                              {gradeInfo.grade}
-                                            </span>
-                                          );
-                                        })()}
-                                      </td>
-                                      <td className={styles.tableCellCenter}>
-                                        <span className={styles.gradePoint}>
-                                          {getBacklogGradeFromMarks(
-                                            result.marks
-                                          ).gradePoint.toFixed(2)}
+                                        <span
+                                          className={`${styles.gradeBadge} ${getGradeBadgeColor(
+                                            result.gradePoint
+                                          )}`}
+                                        >
+                                          {result.grade}
                                         </span>
                                       </td>
                                       <td className={styles.tableCellCenter}>
-                                        {result.marks >= 40 ? (
+                                        <span className={styles.gradePoint}>
+                                          {result.gradePoint.toFixed(2)}
+                                        </span>
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        {result.gradePoint > 0 ? (
                                           <span className={styles.statusPassed}>Cleared</span>
                                         ) : (
                                           <span className={styles.statusFailed}>Failed Again</span>

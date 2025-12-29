@@ -271,11 +271,11 @@ export default function AdminStudents() {
             if (result.failed.length > 0) {
               const failedStudents = result.failed
                 .map((f) => `${f.roll_number}: ${f.error}`)
-                .join("\\n");
+                .join("\n");
 
               showError(
                 "Demotion Results",
-                `Successfully took down ${result.success} students. Failed for ${result.failed.length} students:\\n\\n${failedStudents}`
+                `Successfully took down ${result.success} students. Failed for ${result.failed.length} students:\n${failedStudents}`
               );
             } else {
               // Refresh the students list
@@ -344,36 +344,25 @@ export default function AdminStudents() {
               <p className={styles.brandSubtitle}>Add, edit, and manage student records</p>
             </div>
           </div>
-          <div className={styles.headerActions}>
-            <Link href="/admin/students/add">
-              <Button>
-                <Plus className={styles.addIcon} />
-                Add Student
-              </Button>
-            </Link>
-          </div>
         </header>
 
-        {/* Filters */}
-        <Card className={styles.filtersCard}>
-          <CardHeader>
-            <CardTitle className={styles.cardTitle}>
-              <Filter className={styles.cardIcon} />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={styles.filtersGrid}>
-              <div className={styles.searchWrapper}>
+        {/* Actions Bar */}
+        <div className={styles.actionsBar}>
+          <div className={styles.filtersSection}>
+            <div className={styles.searchContainer}>
+              <div className="relative">
                 <Search className={styles.searchIcon} />
                 <Input
-                  placeholder="Search by name, roll number..."
+                  placeholder="Search by name, roll number, or reg..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={styles.searchInput}
                 />
               </div>
-              <Select
+            </div>
+
+            <div className={styles.filterControls}>
+              <select
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 className={styles.select}
@@ -384,8 +373,8 @@ export default function AdminStudents() {
                     {deptCode}
                   </option>
                 ))}
-              </Select>
-              <Select
+              </select>
+              <select
                 value={yearFilter}
                 onChange={(e) => setYearFilter(e.target.value)}
                 className={styles.select}
@@ -393,12 +382,11 @@ export default function AdminStudents() {
                 <option value="">All Years</option>
                 {filterOptions.years.map((year) => (
                   <option key={year} value={year}>
-                    {year === 1 ? "1st" : year === 2 ? "2nd" : year === 3 ? "3rd" : `${year}th`}{" "}
-                    Year
+                    {year === 1 ? "1st" : year === 2 ? "2nd" : year === 3 ? "3rd" : `${year}th`} Year
                   </option>
                 ))}
-              </Select>
-              <Select
+              </select>
+              <select
                 value={semesterFilter}
                 onChange={(e) => setSemesterFilter(e.target.value)}
                 className={styles.select}
@@ -409,33 +397,33 @@ export default function AdminStudents() {
                     {semester.charAt(0).toUpperCase() + semester.slice(1)}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <Link href="/admin/students/add">
+            <Button className={styles.addButton}>
+              <Plus className={styles.addIcon} />
+              Add Student
+            </Button>
+          </Link>
+        </div>
 
         {/* Students Table */}
         <Card>
           <CardHeader>
             <CardTitle className={styles.cardTitle}>
               <Users className={styles.cardIcon} />
-              Students ({filteredStudents.length})
+              Students {loading ? (
+                <span className={styles.skeletonTableRow} style={{ width: '40px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
+              ) : (
+                <span>({filteredStudents.length})</span>
+              )}
             </CardTitle>
             <CardDescription>Manage all student records and profiles</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className={styles.loadingContainer}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className={styles.loadingCard}>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBar}></div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredStudents.length === 0 ? (
+            {filteredStudents.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <Users className={styles.emptyIcon} />
                 <p className={styles.emptyText}>No students found</p>
@@ -490,17 +478,35 @@ export default function AdminStudents() {
                           />
                         </th>
                         <th className={styles.th}>Name</th>
-                        <th className={styles.th}>Roll Number</th>
-                        <th className={styles.th}>Department Code</th>
+                        <th className={styles.th}>Roll</th>
+                        <th className={styles.th}>Department</th>
                         <th className={styles.th}>Year/Semester</th>
-                        <th className={styles.thCenter}>Courses Registered</th>
-                        <th className={styles.thCenter}>Passed Exams</th>
+                        <th className={styles.thCenter}>Registered</th>
+                        <th className={styles.thCenter}>Passed</th>
                         <th className={styles.thCenter}>CGPA</th>
                         <th className={styles.thCenter}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredStudents.map((student) => (
+                      {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                          <tr key={i} className={styles.tableRow}>
+                            <td className={styles.checkboxCell}><div style={{ width: '16px', height: '16px' }}></div></td>
+                            <td className={styles.td}><div className={styles.skeletonTableRow}></div></td>
+                            <td className={styles.td}><div className={styles.skeletonTableRow}></div></td>
+                            <td className={styles.td}><div className={styles.skeletonTableRow} style={{ width: '60px' }}></div></td>
+                            <td className={styles.td}><div className={styles.skeletonTableRow}></div></td>
+                            <td className={styles.tdCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                            <td className={styles.tdCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                            <td className={styles.tdCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                            <td className={styles.tdCenter}><div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                            </div></td>
+                          </tr>
+                        ))
+                      ) : (
+                        filteredStudents.map((student) => (
                         <tr key={student.id} className={styles.tableRow}>
                           <td className={styles.checkboxCell}>
                             <input
@@ -638,7 +644,8 @@ export default function AdminStudents() {
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>

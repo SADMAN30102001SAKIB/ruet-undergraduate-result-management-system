@@ -70,25 +70,41 @@
   }
 }
 
-.loadingCard {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.loadingCardContent {
-  padding: 1.5rem !important;
-}
-
-.loadingBar {
-  height: 1rem;
+.skeletonText {
+  height: 0.875rem;
+  width: 80px;
   border-radius: 0.25rem;
-  margin-bottom: 0.5rem;
-  background-color: rgb(229 231 235);
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-.loadingBarLarge {
-  height: 2rem;
-  border-radius: 0.25rem;
-  background-color: rgb(229 231 235);
+.skeletonValue {
+  height: 1.5rem;
+  width: 60px;
+  border-radius: 0.375rem;
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .statCard {
@@ -244,7 +260,7 @@
 }
 
 .managementTitle {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
 .footer {

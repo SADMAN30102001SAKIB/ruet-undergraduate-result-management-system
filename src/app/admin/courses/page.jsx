@@ -222,7 +222,7 @@ export default function AdminCourses() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredCourses.filter((c) => c.year === 1).length}
+                {loading ? <div className={styles.skeletonValue} style={{ height: '2rem', width: '40px' }}></div> : filteredCourses.filter((c) => c.year === 1).length}
               </div>
             </CardContent>
           </Card>
@@ -235,7 +235,7 @@ export default function AdminCourses() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredCourses.filter((c) => c.year === 2).length}
+                {loading ? <div className={styles.skeletonValue} style={{ height: '2rem', width: '40px' }}></div> : filteredCourses.filter((c) => c.year === 2).length}
               </div>
             </CardContent>
           </Card>
@@ -248,7 +248,7 @@ export default function AdminCourses() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredCourses.filter((c) => c.year === 3).length}
+                {loading ? <div className={styles.skeletonValue} style={{ height: '2rem', width: '40px' }}></div> : filteredCourses.filter((c) => c.year === 3).length}
               </div>
             </CardContent>
           </Card>
@@ -261,7 +261,7 @@ export default function AdminCourses() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredCourses.filter((c) => c.year === 4).length}
+                {loading ? <div className={styles.skeletonValue} style={{ height: '2rem', width: '40px' }}></div> : filteredCourses.filter((c) => c.year === 4).length}
               </div>
             </CardContent>
           </Card>
@@ -296,28 +296,20 @@ export default function AdminCourses() {
           <CardHeader>
             <CardTitle className={styles.tableCardTitle}>
               <BookOpen className={styles.tableCardIcon} />
-              Courses
-              {filteredCourses.length !== courses.length ? (
-                <span className={styles.tableCardCount}>
-                  ({filteredCourses.length} of {courses.length})
-                </span>
+              Courses {loading ? (
+                <span className={styles.skeletonTableRow} style={{ width: '60px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
               ) : (
-                <span className={styles.tableCardCount}>({courses.length})</span>
+                <span className={styles.tableCardCount}>
+                  {filteredCourses.length !== courses.length 
+                    ? `(${filteredCourses.length} of ${courses.length})` 
+                    : `(${courses.length})`}
+                </span>
               )}
             </CardTitle>
             <CardDescription>Manage course curriculum and academic structure</CardDescription>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className={styles.loadingContainer}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className={styles.loadingItem}>
-                    <div className={styles.loadingBar}></div>
-                    <div className={styles.loadingBarShort}></div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredCourses.length === 0 ? (
+            {filteredCourses.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <BookOpen className={styles.emptyStateIcon} />
                 <h3 className={styles.emptyStateTitle}>No Courses Found</h3>
@@ -347,7 +339,22 @@ export default function AdminCourses() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredCourses.map((course) => (
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className={styles.tableRow}>
+                          <td className={styles.tableCellDetails}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow} style={{ width: '60px' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '80px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                            <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                            <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                          </div></td>
+                        </tr>
+                      ))
+                    ) : (
+                      filteredCourses.map((course) => (
                       <tr key={course.id} className={styles.tableRow}>
                         <td className={styles.tableCellDetails}>
                           <div>
@@ -376,7 +383,9 @@ export default function AdminCourses() {
                           </div>
                         </td>
                         <td className={styles.tableCellCenter}>
-                          <span className={styles.creditsValue}>{course.credits}</span>
+                          <span className={styles.creditsValue}>
+                            {Number(course.credits).toFixed(2)}
+                          </span>
                         </td>
                         <td className={styles.tableCellCenter}>
                           <div className={styles.studentCountContainer}>
@@ -403,7 +412,8 @@ export default function AdminCourses() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

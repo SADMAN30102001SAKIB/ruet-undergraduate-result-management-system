@@ -157,13 +157,6 @@ export default function BacklogManagement() {
     setShowRenameModal(true);
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loadingText}>Loading backlog groups...</div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>
@@ -171,7 +164,7 @@ export default function BacklogManagement() {
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <Link href="/admin/dashboard">
+            <Link href="/admin/results">
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -202,16 +195,20 @@ export default function BacklogManagement() {
           <CardHeader>
             <CardTitle className={styles.cardTitle}>
               <Eye className={styles.cardIcon} />
-              Backlog Groups ({groups.length})
+              Backlog Groups {loading ? (
+                <span className={styles.skeletonTableRow} style={{ width: '40px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
+              ) : (
+                <span>({groups.length})</span>
+              )}
             </CardTitle>
             <CardDescription>
-              {groups.length === 0
-                ? "No backlog groups found"
+              {groups.length === 0 && !loading 
+                ? "No backlog groups found" 
                 : "Manage registration status and view group details"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {groups.length === 0 ? (
+            {groups.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <Eye className={styles.emptyIcon} />
                 <p className={styles.emptyText}>No backlog groups found</p>
@@ -230,7 +227,24 @@ export default function BacklogManagement() {
                     </tr>
                   </thead>
                   <tbody>
-                    {groups.map((group) => (
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className={styles.tableRow}>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "40px", margin: "0 auto" }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "40px", margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "60px", margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: "80px", margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}>
+                            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
+                              <div className={styles.skeletonTableRow} style={{ width: "32px", height: "32px" }}></div>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      groups.map((group) => (
                       <tr key={group.id} className={styles.tableRow}>
                         <td className={styles.tableCell}>
                           <div className={styles.groupInfo}>
@@ -291,7 +305,8 @@ export default function BacklogManagement() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

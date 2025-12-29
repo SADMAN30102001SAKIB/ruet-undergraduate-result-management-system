@@ -118,7 +118,22 @@ export default function StudentDashboard() {
             <GraduationCap className={styles.brandIcon} />
             <div>
               <h1 className={styles.brandTitle}>Student Dashboard</h1>
-              <p className={styles.brandSubtitle}>Welcome, {profile?.name || "Student"}</p>
+              <p className={styles.brandSubtitle}>
+                {loading ? (
+                  <span
+                    className={styles.skeletonText}
+                    style={{
+                      display: "inline-block",
+                      width: "150px",
+                      height: "0.875rem",
+                      marginTop: "0.25rem",
+                      marginBottom: "0",
+                    }}
+                  ></span>
+                ) : (
+                  `Welcome, ${profile?.name || "Student"}`
+                )}
+              </p>
             </div>
           </div>
           <div className={styles.headerActions}>
@@ -130,57 +145,71 @@ export default function StudentDashboard() {
         </header>
 
         {/* Profile Card */}
-        {profile && (
-          <Card className={styles.profileCard}>
-            <CardHeader>
-              <CardTitle className={styles.profileTitle}>
-                <User className={styles.profileIcon} />
-                Profile Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.profileGrid}>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Name</p>
-                  <p className={styles.profileValue}>{profile.name}</p>
+        {loading ? (
+          <div className={styles.loadingCard} style={{ marginBottom: "2rem" }}>
+            <div className={styles.skeletonHeader}></div>
+            <div className={styles.profileGrid}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i}>
+                  <div className={styles.loadingBar} style={{ width: "40%" }}></div>
+                  <div className={styles.loadingBar}></div>
                 </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Roll Number</p>
-                  <p className={styles.profileValueMono}>{profile.roll_number}</p>
+              ))}
+            </div>
+          </div>
+        ) : (
+          profile && (
+            <Card className={styles.profileCard}>
+              <CardHeader>
+                <CardTitle className={styles.profileTitle}>
+                  <User className={styles.profileIcon} />
+                  Profile Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className={styles.profileGrid}>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Name</p>
+                    <p className={styles.profileValue}>{profile.name}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Roll Number</p>
+                    <p className={styles.profileValueMono}>{profile.roll_number}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Registration Number</p>
+                    <p className={styles.profileValueMono}>{profile.registration_number}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Department</p>
+                    <p className={styles.profileValue}>{profile.department_name}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Parent Name</p>
+                    <p className={styles.profileValue}>{profile.parent_name}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Academic Session</p>
+                    <p className={styles.profileValue}>{profile.academic_session}</p>
+                  </div>
+                  <div className={styles.profileField}>
+                    <p className={styles.profileLabel}>Current Semester</p>
+                    <p className={styles.profileValue}>
+                      {profile.current_year}
+                      {profile.current_year === 1
+                        ? "st"
+                        : profile.current_year === 2
+                        ? "nd"
+                        : profile.current_year === 3
+                        ? "rd"
+                        : "th"}{" "}
+                      Year, {profile.current_semester} Semester
+                    </p>
+                  </div>
                 </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Registration Number</p>
-                  <p className={styles.profileValueMono}>{profile.registration_number}</p>
-                </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Department</p>
-                  <p className={styles.profileValue}>{profile.department_name}</p>
-                </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Parent Name</p>
-                  <p className={styles.profileValue}>{profile.parent_name}</p>
-                </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Academic Session</p>
-                  <p className={styles.profileValue}>{profile.academic_session}</p>
-                </div>
-                <div className={styles.profileField}>
-                  <p className={styles.profileLabel}>Current Semester</p>
-                  <p className={styles.profileValue}>
-                    {profile.current_year}
-                    {profile.current_year === 1
-                      ? "st"
-                      : profile.current_year === 2
-                      ? "nd"
-                      : profile.current_year === 3
-                      ? "rd"
-                      : "th"}{" "}
-                    Year, {profile.current_semester} Semester
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {/* Stats Cards */}
@@ -257,19 +286,27 @@ export default function StudentDashboard() {
 
         {/* Quick Actions Grid */}
         <div className={styles.quickActionsGrid}>
-          {quickActions.map((action) => (
-            <Link key={action.title} href={action.href} className={styles.actionCard}>
-              <Card className={styles.actionCard}>
-                <CardHeader className={styles.actionCardHeader}>
-                  <div className={`${styles.actionIconContainer} ${action.containerColor}`}>
-                    <action.icon className={`${styles.actionIcon} ${action.iconColor}`} />
-                  </div>
-                  <CardTitle className={styles.actionTitle}>{action.title}</CardTitle>
-                  <CardDescription>{action.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className={styles.loadingCard}>
+                  <div className={styles.skeletonCircle}></div>
+                  <div className={styles.loadingBar}></div>
+                  <div className={styles.loadingBar} style={{ width: "80%", margin: "0 auto" }}></div>
+                </div>
+              ))
+            : quickActions.map((action) => (
+                <Link key={action.title} href={action.href} className={styles.actionCard}>
+                  <Card className={styles.actionCard}>
+                    <CardHeader className={styles.actionCardHeader}>
+                      <div className={`${styles.actionIconContainer} ${action.containerColor}`}>
+                        <action.icon className={`${styles.actionIcon} ${action.iconColor}`} />
+                      </div>
+                      <CardTitle className={styles.actionTitle}>{action.title}</CardTitle>
+                      <CardDescription>{action.description}</CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
         </div>
 
         {/* Footer */}

@@ -127,66 +127,89 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className={styles.statsGrid}>
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className={styles.loadingCard}>
-                <CardContent className={styles.loadingCardContent}>
-                  <div className={styles.loadingBar}></div>
-                  <div className={styles.loadingBarLarge}></div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <>
-              <Card>
-                <CardContent className={styles.statCard}>
-                  <div className={styles.statCardContent}>
-                    <div className={styles.statInfo}>
+          <Card>
+            <CardContent className={styles.statCard}>
+              <div className={styles.statCardContent}>
+                <div className={styles.statInfo}>
+                  {loading ? (
+                    <>
+                      <div className={styles.skeletonText}></div>
+                      <div className={styles.skeletonValue} style={{ marginTop: '0.5rem' }}></div>
+                    </>
+                  ) : (
+                    <>
                       <p className={styles.statLabel}>Total Students</p>
                       <p className={styles.statValue}>{stats?.totalStudents || 0}</p>
-                    </div>
-                    <Users className={`${styles.statIcon} ${styles.statIconBlue}`} />
-                  </div>
-                </CardContent>
-              </Card>
+                    </>
+                  )}
+                </div>
+                <Users className={`${styles.statIcon} ${styles.statIconBlue}`} />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className={styles.statCard}>
-                  <div className={styles.statCardContent}>
-                    <div className={styles.statInfo}>
+          <Card>
+            <CardContent className={styles.statCard}>
+              <div className={styles.statCardContent}>
+                <div className={styles.statInfo}>
+                  {loading ? (
+                    <>
+                      <div className={styles.skeletonText}></div>
+                      <div className={styles.skeletonValue} style={{ marginTop: '0.5rem' }}></div>
+                    </>
+                  ) : (
+                    <>
                       <p className={styles.statLabel}>Total Courses</p>
                       <p className={styles.statValue}>{stats?.totalCourses || 0}</p>
-                    </div>
-                    <BookOpen className={`${styles.statIcon} ${styles.statIconGreen}`} />
-                  </div>
-                </CardContent>
-              </Card>
+                    </>
+                  )}
+                </div>
+                <BookOpen className={`${styles.statIcon} ${styles.statIconGreen}`} />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className={styles.statCard}>
-                  <div className={styles.statCardContent}>
-                    <div className={styles.statInfo}>
+          <Card>
+            <CardContent className={styles.statCard}>
+              <div className={styles.statCardContent}>
+                <div className={styles.statInfo}>
+                  {loading ? (
+                    <>
+                      <div className={styles.skeletonText}></div>
+                      <div className={styles.skeletonValue} style={{ marginTop: '0.5rem' }}></div>
+                    </>
+                  ) : (
+                    <>
                       <p className={styles.statLabel}>Departments</p>
                       <p className={styles.statValue}>{stats?.totalDepartments || 0}</p>
-                    </div>
-                    <Building2 className={`${styles.statIcon} ${styles.statIconPurple}`} />
-                  </div>
-                </CardContent>
-              </Card>
+                    </>
+                  )}
+                </div>
+                <Building2 className={`${styles.statIcon} ${styles.statIconPurple}`} />
+              </div>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className={styles.statCard}>
-                  <div className={styles.statCardContent}>
-                    <div className={styles.statInfo}>
+          <Card>
+            <CardContent className={styles.statCard}>
+              <div className={styles.statCardContent}>
+                <div className={styles.statInfo}>
+                  {loading ? (
+                    <>
+                      <div className={styles.skeletonText}></div>
+                      <div className={styles.skeletonValue} style={{ marginTop: '0.5rem' }}></div>
+                    </>
+                  ) : (
+                    <>
                       <p className={styles.statLabel}>Published Results</p>
                       <p className={styles.statValue}>{stats?.publishedResults || 0}</p>
-                    </div>
-                    <TrendingUp className={`${styles.statIcon} ${styles.statIconOrange}`} />
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+                    </>
+                  )}
+                </div>
+                <TrendingUp className={`${styles.statIcon} ${styles.statIconOrange}`} />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Quick Actions */}

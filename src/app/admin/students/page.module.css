@@ -59,9 +59,55 @@
   margin-right: 0.5rem;
 }
 
-/* Cards */
-.filtersCard {
-  margin-bottom: 1.5rem;
+/* Skeleton Styles */
+.skeletonText {
+  height: 0.875rem;
+  width: 100px;
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonValue {
+  height: 1.25rem;
+  width: 50px;
+  border-radius: 0.375rem;
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonTableRow {
+  height: 1rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(
+    90deg,
+    rgb(229 231 235) 0%,
+    rgb(243 244 246) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .cardTitle {
@@ -75,21 +121,40 @@
   margin-right: 0.5rem;
 }
 
-/* Filters */
-.filtersGrid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
+/* Actions Bar */
+.actionsBar {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 @media (min-width: 768px) {
-  .filtersGrid {
-    grid-template-columns: repeat(5, 1fr);
+  .actionsBar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 
-.searchWrapper {
+.filtersSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .filtersSection {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.searchContainer {
   position: relative;
+  flex: 1;
+  max-width: 28rem;
 }
 
 .searchIcon {
@@ -100,33 +165,38 @@
   height: 1rem;
   width: 1rem;
   color: var(--muted-foreground);
+  z-index: 10;
 }
 
 .searchInput {
-  padding-left: 2.5rem;
+  padding-left: 2.5rem !important;
+  font-size: 0.875rem;
+}
+
+.filterControls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .select {
   display: flex;
   height: 2.5rem;
-  width: 100%;
+  width: auto;
+  min-width: 140px;
   border-radius: 0.375rem;
   border: 1px solid var(--input);
   background-color: var(--background);
-  padding: 0 0.75rem;
+  padding: 0 2.5rem 0 0.75rem;
   font-size: 0.875rem;
   color: var(--foreground);
   line-height: 1.25rem;
-}
-
-.select:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--ring);
-}
-
-.select option {
-  background-color: var(--background);
-  color: var(--foreground);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  cursor: pointer;
 }
 
 /* Loading States */

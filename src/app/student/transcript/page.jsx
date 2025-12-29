@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePopup } from "@/components/ui/popup";
-import { getGradeFromMarks, getBacklogGradeFromMarks } from "@/lib/utils";
 import {
   GraduationCap,
   ArrowLeft,
@@ -127,217 +126,247 @@ export default function StudentTranscript() {
     return acc;
   }, {});
 
-  const downloadTranscript = () => {
-    // Create a printable version of the transcript
-    const printWindow = window.open("", "_blank");
+  const downloadTranscript = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({
+        orientation: "p",
+        unit: "mm",
+        format: "a4"
+      });
 
-    if (!printWindow) {
-      showError("Error", "Please allow pop-ups to download the transcript");
-      return;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = 0;
+
+      const drawHeader = (pageNumber) => {
+        // --- RUET HEADER ---
+        doc.setFont("times", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0); // Changed from 60, 60, 60
+        doc.text("Rajshahi University of Engineering & Technology (RUET)", pageWidth / 2, 15, { align: "center" });
+        
+        doc.setFont("times", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(0, 0, 0);
+        doc.text("OFFICE OF THE REGISTRAR", pageWidth / 2, 25, { align: "center" });
+        
+        doc.setFont("times", "italic");
+        doc.setFontSize(9);
+        doc.setTextColor(20, 20, 20); // Very dark grey, almost black
+        doc.text("Kazla, Rajshahi-6204, Bangladesh", pageWidth / 2, 31, { align: "center" });
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0);
+        doc.line(margin, 36, pageWidth - margin, 36);
+
+        doc.setFont("times", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text("OFFICIAL ACADEMIC TRANSCRIPT", pageWidth / 2, 45, { align: "center" });
+        
+        return 55; // Next yPosition
+      };
+
+      yPosition = drawHeader(1);
+
+      // --- STUDENT INFO ---
+      const infoRows = [
+        {
+          left: { label: "Student Name:", value: student?.name?.toUpperCase() || "N/A" },
+          right: { label: "Department:", value: student?.department_name || "N/A" }
+        },
+        {
+          left: { label: "Roll Number:", value: student?.roll_number || "N/A" },
+          right: { label: "Academic Session:", value: student?.academic_session || "N/A" }
+        },
+        {
+          left: { label: "Registration No:", value: student?.registration_number || "N/A" },
+          right: { label: "Degree Sought:", value: "Bachelor of Science in Engineering" }
+        }
+      ];
+
+      infoRows.forEach((row) => {
+        doc.setFont("times", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0); // Pure black labels
+        
+        // Split text to sizes
+        const leftValLines = doc.splitTextToSize(row.left.value, pageWidth / 2 - margin - 35);
+        const rightValLines = doc.splitTextToSize(row.right.value, pageWidth - margin - (pageWidth / 2 + 45));
+        
+        // Calculate row height based on max lines - Tightened spacing
+        const rowHeight = Math.max(leftValLines.length, rightValLines.length) * 4.2 + 2;
+
+        // Draw Left Column
+        doc.setFont("times", "bold");
+        doc.text(row.left.label, margin, yPosition);
+        doc.setFont("times", "normal");
+        doc.setTextColor(0, 0, 0); // Pure black values
+        doc.text(leftValLines, margin + 35, yPosition);
+
+        // Draw Right Column
+        doc.setFont("times", "bold");
+        doc.setTextColor(0, 0, 0);
+        doc.text(row.right.label, pageWidth / 2 + 5, yPosition);
+        doc.setFont("times", "normal");
+        doc.text(rightValLines, pageWidth / 2 + 45, yPosition);
+
+        yPosition += rowHeight;
+      });
+
+      yPosition += 6;
+
+      // --- RESULTS TABLES ---
+      const sortedSemesterKeys = Object.keys(groupedResults).sort((a, b) => {
+        const [yA, sA] = a.split("-");
+        const [yB] = b.split("-");
+        const yDiff = parseInt(yA) - parseInt(yB);
+        if (yDiff !== 0) return yDiff;
+        return sA === "odd" ? -1 : 1;
+      });
+
+      for (const key of sortedSemesterKeys) {
+        const semesterResults = groupedResults[key];
+        const [year, semester] = key.split("-");
+        const sgpa = cgpaData?.sgpas.find((s) => s.year === parseInt(year) && s.semester === semester)?.sgpa || 0;
+
+        // Check for page break before semester header
+        if (yPosition + 30 > pageHeight - margin) {
+          doc.addPage();
+          yPosition = drawHeader();
+        }
+
+        // Semester Header
+        doc.setDrawColor(0);
+        doc.setTextColor(0, 0, 0);
+        doc.rect(margin, yPosition, pageWidth - (margin * 2), 8, "D");
+        
+        doc.setFont("times", "bold");
+        doc.setFontSize(10);
+        doc.text(`YEAR ${year}, ${semester.toUpperCase()} SEMESTER`, margin + 3, yPosition + 5.5);
+        doc.text(`SGPA: ${sgpa.toFixed(2)}`, pageWidth - margin - 3, yPosition + 5.5, { align: "right" });
+        
+        yPosition += 8;
+
+        // Table Header
+        const colWidths = [25, 85, 20, 20, 20]; // Code, Title, Credits, Grade, Points
+        const colStarts = [margin, margin + 25, margin + 110, margin + 130, margin + 150];
+        const headers = ["CODE", "COURSE TITLE", "CREDITS", "GRADE", "POINTS"];
+
+        doc.rect(margin, yPosition, pageWidth - (margin * 2), 8, "D");
+        
+        headers.forEach((h, i) => {
+          doc.setFontSize(8);
+          doc.setTextColor(0, 0, 0);
+          if (i >= 2) {
+            doc.text(h, colStarts[i] + (colWidths[i] / 2), yPosition + 5.5, { align: "center" });
+          } else {
+            doc.text(h, colStarts[i] + 3, yPosition + 5.5);
+          }
+        });
+
+        yPosition += 8;
+        doc.setFont("times", "normal");
+
+        // Table Rows
+        const sortedResults = [...semesterResults].sort((a, b) => {
+          const aIsPassed = a.gradePoint > 0;
+          const bIsPassed = b.gradePoint > 0;
+          if (aIsPassed !== bIsPassed) return bIsPassed ? 1 : -1;
+          if (a.is_backlog !== b.is_backlog) return a.is_backlog ? 1 : -1;
+          return a.course_code.localeCompare(b.course_code);
+        });
+
+        for (const result of sortedResults) {
+          const titleLines = doc.splitTextToSize(
+            result.course_name + (result.is_backlog ? " (Backlog)" : ""), 
+            colWidths[1] - 6
+          );
+          const rowHeight = Math.max(7, titleLines.length * 4.5 + 2);
+
+          if (yPosition + rowHeight > pageHeight - margin - 20) {
+            doc.addPage();
+            yPosition = drawHeader();
+            // Re-draw table header on new page
+            doc.rect(margin, yPosition, pageWidth - (margin * 2), 8, "D");
+            headers.forEach((h, i) => {
+              doc.setFontSize(8);
+              doc.setTextColor(0, 0, 0);
+              if (i >= 2) doc.text(h, colStarts[i] + (colWidths[i] / 2), yPosition + 5.5, { align: "center" });
+              else doc.text(h, colStarts[i] + 3, yPosition + 5.5);
+            });
+            yPosition += 8;
+            doc.setFont("times", "normal");
+          }
+
+          doc.rect(margin, yPosition, pageWidth - (margin * 2), rowHeight, "D");
+          doc.setFontSize(9);
+          doc.setTextColor(0, 0, 0);
+          doc.text(result.course_code, colStarts[0] + 3, yPosition + 5);
+          doc.text(titleLines, colStarts[1] + 3, yPosition + 5);
+          doc.text(parseFloat(result.credits).toFixed(2), colStarts[2] + (colWidths[2] / 2), yPosition + 5, { align: "center" });
+          doc.setFont("times", "bold");
+          doc.text(result.grade, colStarts[3] + (colWidths[3] / 2), yPosition + 5, { align: "center" });
+          doc.setFont("times", "normal");
+          doc.text(result.gradePoint.toFixed(2), colStarts[4] + (colWidths[4] / 2), yPosition + 5, { align: "center" });
+
+          yPosition += rowHeight;
+        }
+
+        yPosition += 10; // Space between semesters
+      }
+
+      // --- SUMMARY BOX ---
+      if (yPosition + 35 > pageHeight - margin - 40) {
+        doc.addPage();
+        yPosition = drawHeader();
+      }
+
+      doc.setDrawColor(0);
+      doc.setTextColor(0, 0, 0);
+      doc.setLineWidth(0.3);
+      doc.rect(margin, yPosition, pageWidth - (margin * 2), 25, "D");
+
+      doc.setFont("times", "bold");
+      doc.setFontSize(10);
+      doc.text(`TOTAL COMPLETED SEMESTERS: ${cgpaData?.sgpas?.length || 0}`, margin + 5, yPosition + 8);
+      doc.text(`CUMULATIVE GPA (CGPA): ${cgpaData?.cgpa?.toFixed(2) || "0.00"}`, pageWidth - margin - 5, yPosition + 8, { align: "right" });
+      
+      const totalCredits = effectiveResults?.reduce((sum, r) => r.grade !== "F" ? sum + r.credits : sum, 0) || 0;
+      doc.text(`TOTAL CREDITS EARNED: ${totalCredits.toFixed(2)}`, margin + 5, yPosition + 17);
+      doc.text(`TRANSCRIPT DATE: ${new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase()}`, pageWidth - margin - 5, yPosition + 17, { align: "right" });
+
+      yPosition += 45;
+
+      // --- SIGNATURES ---
+      const sigWidth = 45;
+      const sigY = pageHeight - 35;
+      
+      const sigs = ["Prepared By", "Verified By", "Controller of Examinations"];
+      const sigPositions = [margin, pageWidth / 2 - (sigWidth / 2), pageWidth - margin - sigWidth];
+
+      sigs.forEach((label, i) => {
+        doc.setLineWidth(0.3);
+        doc.line(sigPositions[i], sigY, sigPositions[i] + sigWidth, sigY);
+        doc.setFont("times", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0); // Black signatures
+        doc.text(label, sigPositions[i] + (sigWidth / 2), sigY + 5, { align: "center" });
+      });
+
+      doc.save(`Transcript_${student?.roll_number || "RUET"}.pdf`);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      showError("PDF Error", "Failed to generate transcript PDF. Please try again.");
     }
-
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Academic Transcript - ${student?.name}</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
-          }
-          .student-info {
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-          }
-          .semester-section {
-            margin-bottom: 25px;
-          }
-          .semester-title {
-            background: #f5f5f5;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            border-left: 4px solid #007bff;
-          }
-          .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-          }
-          .results-table th,
-          .results-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-          }
-          .results-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-          }
-          .summary {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-          }
-          .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-          }
-          @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>ACADEMIC TRANSCRIPT</h1>
-          <h2>Rajshahi University of Engineering & Technology (RUET)</h2>
-        </div>
-        
-        <div class="student-info">
-          <div><strong>Name:</strong> ${student?.name || "N/A"}</div>
-          <div><strong>Roll Number:</strong> ${student?.roll_number || "N/A"}</div>
-          <div><strong>Registration:</strong> ${student?.registration_number || "N/A"}</div>
-          <div><strong>Department:</strong> ${student?.department_name || "N/A"}</div>
-          <div><strong>Session:</strong> ${student?.academic_session || "N/A"}</div>
-          <div><strong>Current Year:</strong> ${student?.current_year || "N/A"}</div>
-        </div>
-        
-        ${Object.entries(groupedResults)
-          .map(([key, semesterResults]) => {
-            const [year, semester] = key.split("-");
-            const sgpa =
-              cgpaData?.sgpas.find((s) => s.year === parseInt(year) && s.semester === semester)
-                ?.sgpa || 0;
-
-            return `
-            <div class="semester-section">
-              <div class="semester-title">Year ${year} - ${
-              semester.charAt(0).toUpperCase() + semester.slice(1)
-            } Semester (SGPA: ${sgpa.toFixed(2)})</div>
-              <table class="results-table">
-                <thead>
-                  <tr>
-                    <th>Course Code</th>
-                    <th>Course Name</th>
-                    <th>Credits</th>
-                    <th>Marks</th>
-                    <th>Grade</th>
-                    <th>Grade Point</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${semesterResults
-                    .sort((a, b) => {
-                      // Primary sort: Pass/Fail status (passed courses first)
-                      const aGrade = a.is_backlog
-                        ? getBacklogGradeFromMarks(a.marks)
-                        : getGradeFromMarks(a.marks);
-                      const bGrade = b.is_backlog
-                        ? getBacklogGradeFromMarks(b.marks)
-                        : getGradeFromMarks(b.marks);
-                      const aIsPassed = aGrade.gradePoint > 0;
-                      const bIsPassed = bGrade.gradePoint > 0;
-
-                      if (aIsPassed !== bIsPassed) {
-                        return bIsPassed ? 1 : -1; // Passed courses first
-                      }
-
-                      // Secondary sort: Backlog status (regular results before backlog)
-                      if (a.is_backlog !== b.is_backlog) {
-                        return a.is_backlog ? 1 : -1; // Regular results first
-                      }
-
-                      // Tertiary sort: Course code (alphabetical)
-                      const codeComparison = a.course_code.localeCompare(b.course_code);
-                      if (codeComparison !== 0) return codeComparison;
-
-                      // Final sort: Course name
-                      return a.course_name.localeCompare(b.course_name);
-                    })
-                    .map((result) => {
-                      const gradeInfo = result.is_backlog
-                        ? getBacklogGradeFromMarks(result.marks)
-                        : getGradeFromMarks(result.marks);
-                      return `
-                      <tr>
-                        <td>${result.course_code}</td>
-                        <td>${result.course_name}${result.is_backlog ? " (Backlog)" : ""}</td>
-                        <td>${result.credits}</td>
-                        <td>${result.marks}</td>
-                        <td>${gradeInfo.grade}</td>
-                        <td>${gradeInfo.gradePoint}</td>
-                      </tr>
-                    `;
-                    })
-                    .join("")}
-                </tbody>
-              </table>
-            </div>
-          `;
-          })
-          .join("")}
-        
-        <div class="summary">
-          <h3>Academic Summary</h3>
-          <div class="summary-grid">
-            <div><strong>Total Semesters Completed:</strong> ${cgpaData?.sgpas?.length || 0}</div>
-            <div><strong>Cumulative GPA (CGPA):</strong> ${
-              cgpaData?.cgpa?.toFixed(2) || "0.00"
-            }</div>
-            <div><strong>Credits Earned:</strong> ${
-              effectiveResults?.reduce((sum, r) => {
-                const gradeInfo = r.is_backlog
-                  ? getBacklogGradeFromMarks(r.marks)
-                  : getGradeFromMarks(r.marks);
-                return gradeInfo.grade !== "F" ? sum + r.credits : sum;
-              }, 0) || 0
-            } / ${registeredCourses?.reduce((sum, r) => sum + r.credits, 0) || 0}</div>
-            <div><strong>Generated on:</strong> ${new Date().toLocaleDateString()}</div>
-          </div>
-        </div>
-        
-        <div class="no-print" style="margin-top: 30px; text-align: center;">
-          <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            Print / Save as PDF
-          </button>
-        </div>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-
-    // Auto-focus the print window
-    printWindow.focus();
   };
-
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loadingText}>Loading transcript...</div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        {/* Header */}
+        {/* Header - Always visible */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
             <Link href="/student/dashboard">
@@ -352,235 +381,280 @@ export default function StudentTranscript() {
             </div>
           </div>
           <div className={styles.headerRight}>
-            <Button variant="outline" onClick={downloadTranscript}>
+            <Button variant="outline" onClick={downloadTranscript} disabled={loading}>
               <Download className={styles.downloadIcon} />
               Download PDF
             </Button>
           </div>
         </header>
 
-        {/* Student Info */}
-        {student && (
-          <Card className={styles.cardSpacing}>
-            <CardHeader>
-              <CardTitle className={styles.flexCenter}>
-                <Award className={styles.icon5} />
-                Student Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.studentInfoGrid}>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>Name</p>
-                  <p className={styles.infoValue}>{student.name}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>Roll Number</p>
-                  <p className={styles.infoValue}>{student.roll_number}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>Registration Number</p>
-                  <p className={styles.infoValue}>{student.registration_number}</p>
-                </div>
-                <div className={styles.infoItem}>
-                  <p className={styles.infoLabel}>Department</p>
-                  <p className={styles.infoValue}>{student.department_name}</p>
-                </div>
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            {/* Profile Skeleton */}
+            <div className={styles.loadingCardSkeleton}>
+              <div className={styles.skeletonHeader}></div>
+              <div className={styles.profileGrid} style={{ gap: "1rem" }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className={styles.skeletonText} style={{ height: "1.5rem" }}></div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
 
-        {/* CGPA Summary */}
-        {cgpaData && (
-          <Card className={styles.cardSpacing}>
-            <CardHeader>
-              <CardTitle className={styles.flexCenter}>
-                <TrendingUp className={styles.icon5} />
-                Academic Performance Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={styles.performanceGrid}>
-                <div className={styles.performanceItem}>
-                  <p className={styles.performanceLabel}>Overall CGPA</p>
-                  <div className={styles.performanceValue}>{cgpaData.cgpa.toFixed(2)}</div>
-                </div>
-                <div className={styles.performanceItem}>
-                  <p className={styles.performanceLabel}>Credits Earned</p>
-                  <div className={styles.performanceValue}>
-                    {effectiveResults?.reduce((sum, r) => {
-                      const gradeInfo = r.is_backlog
-                        ? getBacklogGradeFromMarks(r.marks)
-                        : getGradeFromMarks(r.marks);
-                      return gradeInfo.grade !== "F" ? sum + r.credits : sum;
-                    }, 0) || 0}
+            {/* Performance Summary Skeleton */}
+            <div className={styles.loadingCardSkeleton} style={{ padding: "2rem" }}>
+              <div className={styles.skeletonHeader} style={{ margin: "0 auto 1.5rem" }}></div>
+              <div className={styles.performanceGrid} style={{ gap: "2rem" }}>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className={styles.skeletonText} style={{ width: "80px", height: "1rem" }}></div>
+                    <div className={styles.skeletonText} style={{ width: "100px", height: "2.5rem" }}></div>
                   </div>
-                  <p className={styles.performanceSubtext}>Credits Completed</p>
-                </div>
-                <div className={styles.performanceItem}>
-                  <p className={styles.performanceLabel}>Courses Completed</p>
-                  <div className={styles.performanceValue}>{effectiveResults?.length || 0}</div>
-                  <p className={styles.performanceSubtext}>Total Courses</p>
-                </div>
+                ))}
               </div>
+            </div>
 
-              {/* Semester-wise SGPA */}
-              <div className={styles.semesterPerformance}>
-                <h4 className={styles.semesterTitle}>Semester-wise Performance</h4>
-                <div className={styles.semesterGrid}>
-                  {cgpaData.sgpas.map((sgpa, index) => (
-                    <div key={index} className={styles.semesterCard}>
-                      <p className={styles.semesterLabel}>
-                        Year {sgpa.year} -{" "}
-                        {sgpa.semester.charAt(0).toUpperCase() + sgpa.semester.slice(1)}
-                      </p>
-                      <p className={styles.semesterSgpa}>{sgpa.sgpa.toFixed(2)}</p>
-                      <p
-                        className={`${styles.semesterGrade} ${getGradeColor(
-                          getGradeFromGradePoint(sgpa.sgpa)
-                        )}`}
-                      >
-                        {getGradeFromGradePoint(sgpa.sgpa)}
-                      </p>
+            {/* Semester Performance Skeleton */}
+            <div className={styles.loadingCardSkeleton}>
+              <div className={styles.skeletonHeader}></div>
+              <div className={styles.semesterGrid} style={{ gap: "1.5rem" }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className={styles.semesterCard} style={{ backgroundColor: 'rgb(0 0 0 / 0.05)', padding: "1.5rem" }}>
+                    <div className={styles.skeletonText} style={{ height: "1.25rem", marginBottom: "0.5rem" }}></div>
+                    <div className={styles.skeletonText} style={{ height: "2rem", width: "60%", margin: "0 auto" }}></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Results Table Skeleton */}
+            <div className={styles.loadingCardSkeleton} style={{ marginTop: "2rem" }}>
+              <div className={styles.skeletonHeader} style={{ width: "300px" }}></div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className={styles.skeletonText} style={{ height: "1.5rem" }}></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Student Info */}
+            {student && (
+              <Card className={styles.cardSpacing}>
+                <CardHeader>
+                  <CardTitle className={styles.flexCenter}>
+                    <Award className={styles.icon5} />
+                    Student Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.studentInfoGrid}>
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>Name</p>
+                      <p className={styles.infoValue}>{student.name}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>Roll Number</p>
+                      <p className={styles.infoValue}>{student.roll_number}</p>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>Registration Number</p>
+                      <p className={styles.infoValue}>{student.registration_number}</p>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <p className={styles.infoLabel}>Department</p>
+                      <p className={styles.infoValue}>{student.department_name}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Detailed Results */}
-        <div className={styles.resultsSection}>
-          {Object.entries(groupedResults)
-            .sort(([a], [b]) => {
-              const [yearA, semA] = a.split("-");
-              const [yearB] = b.split("-");
-              const yearDiff = parseInt(yearA) - parseInt(yearB);
-              if (yearDiff !== 0) return yearDiff;
-              return semA === "odd" ? -1 : 1;
-            })
-            .map(([key, semesterResults]) => {
-              const [year, semester] = key.split("-");
-              const semesterSGPA = cgpaData?.sgpas.find(
-                (s) => s.year === parseInt(year) && s.semester === semester
-              );
-
-              return (
-                <Card key={key} className={styles.resultCard}>
-                  <CardHeader>
-                    <CardTitle className={styles.resultCardHeader}>
-                      <div className={styles.resultCardTitle}>
-                        <Calendar className={styles.resultIcon} />
-                        Year {year} - {semester.charAt(0).toUpperCase() + semester.slice(1)}{" "}
-                        Semester
+            {/* Academic Performance Summary */}
+            {cgpaData && (
+              <Card className={styles.cardSpacing}>
+                <CardHeader>
+                  <CardTitle className={styles.flexCenter}>
+                    <TrendingUp className={styles.icon5} />
+                    Academic Performance Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.performanceGrid}>
+                    <div className={styles.performanceItem}>
+                      <p className={styles.performanceLabel}>Cumulative GPA</p>
+                      <div className={styles.performanceValue}>{cgpaData.cgpa.toFixed(2)}</div>
+                    </div>
+                    <div className={styles.performanceItem}>
+                      <p className={styles.performanceLabel}>Credits Earned</p>
+                      <div className={styles.performanceValue}>
+                        {effectiveResults?.reduce((sum, r) => {
+                          return r.grade !== "F" ? sum + r.credits : sum;
+                        }, 0) || 0}
                       </div>
-                      {semesterSGPA && (
-                        <div className={styles.sgpaDisplay}>
-                          SGPA:{" "}
-                          <span className={styles.sgpaValue}>{semesterSGPA.sgpa.toFixed(2)}</span>
-                        </div>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className={styles.resultsTable}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr className={styles.tableHeader}>
-                            <th className={styles.tableHeaderCell}>Course Code</th>
-                            <th className={styles.tableHeaderCell}>Course Name</th>
-                            <th className={styles.tableHeaderCellCenter}>Credits</th>
-                            <th className={styles.tableHeaderCellCenter}>Grade Point</th>
-                            <th className={styles.tableHeaderCellCenter}>Grade</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {semesterResults
-                            .sort((a, b) => {
-                              // Primary sort: Pass/Fail status (passed courses first)
-                              const aGrade = a.is_backlog
-                                ? getBacklogGradeFromMarks(a.marks)
-                                : getGradeFromMarks(a.marks);
-                              const bGrade = b.is_backlog
-                                ? getBacklogGradeFromMarks(b.marks)
-                                : getGradeFromMarks(b.marks);
-                              const aIsPassed = aGrade.gradePoint > 0;
-                              const bIsPassed = bGrade.gradePoint > 0;
-
-                              if (aIsPassed !== bIsPassed) {
-                                return bIsPassed ? 1 : -1; // Passed courses first
-                              }
-
-                              // Secondary sort: Backlog status (regular results before backlog)
-                              if (a.is_backlog !== b.is_backlog) {
-                                return a.is_backlog ? 1 : -1; // Regular results first
-                              }
-
-                              // Tertiary sort: Course code (alphabetical)
-                              const codeComparison = a.course_code.localeCompare(b.course_code);
-                              if (codeComparison !== 0) return codeComparison;
-
-                              // Final sort: Course name
-                              return a.course_name.localeCompare(b.course_name);
-                            })
-                            .map((result) => {
-                              const gradeInfo = result.is_backlog
-                                ? getBacklogGradeFromMarks(result.marks)
-                                : getGradeFromMarks(result.marks);
-                              return (
-                                <tr key={result.id} className={styles.tableRow}>
-                                  <td className={styles.tableCell}>
-                                    <span className={styles.courseCode}>{result.course_code}</span>
-                                  </td>
-                                  <td className={styles.tableCell}>
-                                    <span className={styles.courseName}>
-                                      {result.course_name}
-                                      {result.is_backlog && (
-                                        <span className={styles.backlogIndicator}> (Backlog)</span>
-                                      )}
-                                    </span>
-                                  </td>
-                                  <td className={styles.tableCellCenter}>
-                                    <span className={styles.credits}>{result.credits}</span>
-                                  </td>
-                                  <td className={styles.tableCellCenter}>
-                                    <span className={styles.gradePoint}>
-                                      {gradeInfo.gradePoint.toFixed(2)}
-                                    </span>
-                                  </td>
-                                  <td className={styles.tableCellCenter}>
-                                    <span
-                                      className={`${styles.gradeBadge} ${getGradeColor(
-                                        gradeInfo.grade
-                                      )}`}
-                                    >
-                                      {gradeInfo.grade}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                        </tbody>
-                      </table>
+                      <p className={styles.performanceSubtext}>Credits Completed</p>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-        </div>
+                    <div className={styles.performanceItem}>
+                      <p className={styles.performanceLabel}>Courses Completed</p>
+                      <div className={styles.performanceValue}>{effectiveResults?.length || 0}</div>
+                      <p className={styles.performanceSubtext}>Total Courses</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-        {(results?.length || 0) === 0 && (
-          <Card>
-            <CardContent className={styles.noResults}>
-              <BookOpen className={styles.noResultsIcon} />
-              <p className={styles.noResultsTitle}>No results available yet</p>
-              <p className={styles.noResultsSubtitle}>
-                Your academic results will appear here once published by the administration
-              </p>
-            </CardContent>
-          </Card>
+            {/* Semester-wise Performance */}
+            {cgpaData && cgpaData.sgpas && cgpaData.sgpas.length > 0 && (
+              <Card className={styles.cardSpacing}>
+                <CardHeader>
+                  <CardTitle className={styles.flexCenter}>
+                    <TrendingUp className={styles.icon5} />
+                    Semester-wise Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={styles.semesterGrid}>
+                    {cgpaData.sgpas.map((sgpa, index) => (
+                      <div key={index} className={styles.semesterCard}>
+                        <p className={styles.semesterLabel}>
+                          Year {sgpa.year} -{" "}
+                          {sgpa.semester.charAt(0).toUpperCase() + sgpa.semester.slice(1)}
+                        </p>
+                        <p className={styles.semesterSgpa}>{sgpa.sgpa.toFixed(2)}</p>
+                        <p
+                          className={`${styles.semesterGrade} ${getGradeColor(
+                            getGradeFromGradePoint(sgpa.sgpa)
+                          )}`}
+                        >
+                          {getGradeFromGradePoint(sgpa.sgpa)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Detailed Results */}
+            <div className={styles.resultsSection}>
+              {Object.entries(groupedResults)
+                .sort(([a], [b]) => {
+                  const [yearA, semA] = a.split("-");
+                  const [yearB] = b.split("-");
+                  const yearDiff = parseInt(yearA) - parseInt(yearB);
+                  if (yearDiff !== 0) return yearDiff;
+                  return semA === "odd" ? -1 : 1;
+                })
+                .map(([key, semesterResults]) => {
+                  const [year, semester] = key.split("-");
+                  const semesterSGPA = cgpaData?.sgpas.find(
+                    (s) => s.year === parseInt(year) && s.semester === semester
+                  );
+
+                  return (
+                    <Card key={key} className={styles.resultCard}>
+                      <CardHeader>
+                        <CardTitle className={styles.resultCardHeader}>
+                          <div className={styles.resultCardTitle}>
+                            <Calendar className={styles.resultIcon} />
+                            Year {year} - {semester.charAt(0).toUpperCase() + semester.slice(1)}{" "}
+                            Semester
+                          </div>
+                          {semesterSGPA && (
+                            <div className={styles.sgpaDisplay}>
+                              SGPA:{" "}
+                              <span className={styles.sgpaValue}>{semesterSGPA.sgpa.toFixed(2)}</span>
+                            </div>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className={styles.resultsTable}>
+                          <table className={styles.table}>
+                            <thead>
+                              <tr className={styles.tableHeader}>
+                                <th className={styles.tableHeaderCell}>Course Code</th>
+                                <th className={styles.tableHeaderCell}>Course Name</th>
+                                <th className={styles.tableHeaderCellCenter}>Credits</th>
+                                <th className={styles.tableHeaderCellCenter}>Grade</th>
+                                <th className={styles.tableHeaderCellCenter}>Grade Point</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {semesterResults
+                                .sort((a, b) => {
+                                  const aIsPassed = a.gradePoint > 0;
+                                  const bIsPassed = b.gradePoint > 0;
+
+                                  if (aIsPassed !== bIsPassed) {
+                                    return bIsPassed ? 1 : -1;
+                                  }
+
+                                  if (a.is_backlog !== b.is_backlog) {
+                                    return a.is_backlog ? 1 : -1;
+                                  }
+
+                                  const codeComparison = a.course_code.localeCompare(b.course_code);
+                                  if (codeComparison !== 0) return codeComparison;
+
+                                  return a.course_name.localeCompare(b.course_name);
+                                })
+                                .map((result) => {
+                                  return (
+                                    <tr key={result.id} className={styles.tableRow}>
+                                      <td className={styles.tableCell}>
+                                        <span className={styles.courseCode}>{result.course_code}</span>
+                                      </td>
+                                      <td className={styles.tableCell}>
+                                        <span className={styles.courseName}>
+                                          {result.course_name}
+                                          {result.is_backlog && (
+                                            <span className={styles.backlogIndicator}> (Backlog)</span>
+                                          )}
+                                        </span>
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        <span className={styles.credits}>{parseFloat(result.credits).toFixed(2)}</span>
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        <span
+                                          className={`${styles.gradeBadge} ${getGradeColor(
+                                            result.grade
+                                          )}`}
+                                        >
+                                          {result.grade}
+                                        </span>
+                                      </td>
+                                      <td className={styles.tableCellCenter}>
+                                        <span className={styles.gradePoint}>
+                                          {result.gradePoint.toFixed(2)}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+            </div>
+
+            {(results?.length || 0) === 0 && (
+              <Card>
+                <CardContent className={styles.noResults}>
+                  <BookOpen className={styles.noResultsIcon} />
+                  <p className={styles.noResultsTitle}>No results available yet</p>
+                  <p className={styles.noResultsSubtitle}>
+                    Your academic results will appear here once published by the administration
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </>
         )}
       </div>
 

@@ -384,13 +384,6 @@ export default function AdminResults() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.loadingText}>Loading results...</div>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.container}>
@@ -526,7 +519,9 @@ export default function AdminResults() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={styles.statValue}>{filteredResults.length}</div>
+              <div className={styles.statValue}>
+                {loading ? <div className={styles.skeletonValue}></div> : filteredResults.length}
+              </div>
             </CardContent>
           </Card>
 
@@ -539,7 +534,11 @@ export default function AdminResults() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredResults.filter((r) => r.published).length}
+                {loading ? (
+                  <div className={styles.skeletonValue}></div>
+                ) : (
+                  filteredResults.filter((r) => r.published).length
+                )}
               </div>
             </CardContent>
           </Card>
@@ -553,19 +552,19 @@ export default function AdminResults() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {filteredResults.length > 0
-                  ? (() => {
-                      const allResults = filteredResults;
-                      const allPassed = allResults.filter((r) => r.marks >= 40); // Both regular + backlog passes
-                      const percentage =
-                        allResults.length > 0
-                          ? ((allPassed.length / allResults.length) * 100).toFixed(1) + "%"
-                          : "0.0%";
-                      const passed = allPassed.length;
-                      const failed = allResults.filter((r) => r.marks < 40).length;
-                      return <>{percentage}</>;
-                    })()
-                  : "0.0%"}
+                {loading ? (
+                  <div className={styles.skeletonValue}></div>
+                ) : filteredResults.length > 0 ? (
+                  (() => {
+                    const allResults = filteredResults;
+                    const allPassed = allResults.filter((r) => r.marks >= 40);
+                    return (
+                      ((allPassed.length / allResults.length) * 100).toFixed(1) + "%"
+                    );
+                  })()
+                ) : (
+                  "0.0%"
+                )}
               </div>
             </CardContent>
           </Card>
@@ -579,7 +578,11 @@ export default function AdminResults() {
             </CardHeader>
             <CardContent>
               <div className={styles.statValue}>
-                {new Set(filteredResults.map((r) => r.course_id)).size}
+                {loading ? (
+                  <div className={styles.skeletonValue}></div>
+                ) : (
+                  new Set(filteredResults.map((r) => r.course_id)).size
+                )}
               </div>
             </CardContent>
           </Card>
@@ -592,7 +595,11 @@ export default function AdminResults() {
               <div className={styles.titleWithActions}>
                 <CardTitle className={styles.cardTitle}>
                   <TrendingUp className={styles.cardIcon} />
-                  Results <span>({filteredResults.length})</span>
+                  Results {loading ? (
+                    <span className={styles.skeletonTableRow} style={{ width: '40px', display: 'inline-block', verticalAlign: 'middle', marginLeft: '0.5rem' }}></span>
+                  ) : (
+                    <span>({filteredResults.length})</span>
+                  )}
                 </CardTitle>
                 <div className={styles.titleActions}>
                   <Button
@@ -625,7 +632,7 @@ export default function AdminResults() {
             </div>
           </CardHeader>
           <CardContent>
-            {filteredResults.length === 0 ? (
+            {filteredResults.length === 0 && !loading ? (
               <div className={styles.emptyState}>
                 <TrendingUp className={styles.emptyIcon} />
                 <p className={styles.emptyText}>No results found</p>
@@ -651,7 +658,23 @@ export default function AdminResults() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredResults.map((result) => (
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <tr key={i} className={styles.tableRow}>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCell}><div className={styles.skeletonTableRow}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '60px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '40px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '60px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div className={styles.skeletonTableRow} style={{ width: '70px', margin: '0 auto' }}></div></td>
+                          <td className={styles.tableCellCenter}><div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                            <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                            <div className={styles.skeletonTableRow} style={{ width: '32px', height: '32px' }}></div>
+                          </div></td>
+                        </tr>
+                      ))
+                    ) : (
+                      filteredResults.map((result) => (
                       <tr key={result.id} className={styles.tableRow}>
                         <td className={styles.tableCell}>
                           <div className={styles.studentInfo}>
@@ -745,8 +768,9 @@ export default function AdminResults() {
                             </Button>
                           </div>
                         </td>
-                      </tr>
-                    ))}
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

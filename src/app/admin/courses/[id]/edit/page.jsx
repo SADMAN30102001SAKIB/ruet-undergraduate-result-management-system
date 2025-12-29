@@ -312,7 +312,7 @@ export default function EditCourse() {
                     type="number"
                     min="0.75"
                     max="6"
-                    step="0.75"
+                    step="0.25"
                     value={formData.credits}
                     onChange={handleInputChange}
                     placeholder="3"

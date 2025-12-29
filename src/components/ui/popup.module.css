@@ -95,6 +95,7 @@
   color: var(--muted-foreground);
   line-height: 1.625;
   margin: 0;
+  white-space: pre-line;
 }
 
 .footer {

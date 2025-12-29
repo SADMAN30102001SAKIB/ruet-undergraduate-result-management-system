@@ -272,7 +272,7 @@ export default function AddCourse() {
                       type="number"
                       min="0.75"
                       max="6"
-                      step="0.75"
+                      step="0.25"
                       value={formData.credits}
                       onChange={(e) => handleChange("credits", e.target.value)}
                       className={errors.credits ? styles.inputError : ""}
